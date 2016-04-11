@@ -1,21 +1,43 @@
 /// <reference path="phaser/phaser.d.ts"/>
 
 import Point = Phaser.Point;
-import game = PIXI.game;
-class mainState extends Phaser.State {
+
+class SimpleGame extends Phaser.Game {
+
     game:Phaser.Game;
 
+    // Tilemaps y TileLayers
+    tilemap:Phaser.Tilemap;
+
+    // Grupos
+    enemigos:Phaser.Group;
+
     // Sprites
-    private jugador:Phaser.Sprite;
-    private cursor:Phaser.CursorKeys;
-    private proyectiles:Phaser.Group;
-    private nextFire = 0;
+    jugador:Phaser.Sprite;
+    cursor:Phaser.CursorKeys;
+    proyectiles:Phaser.Group;
+
+
+    nextFire = 0;
 
     // Constantes
-    private VELOCIDAD_MAXIMA = 450;  // pixels/second
-    private FUERZA_ROZAMIENTO = 100; // Aceleración negativa
-    private ACELERACION = 700;       // aceleración
-    private CADENCIA_DISPARO = 200;
+    VELOCIDAD_MAXIMA = 450;  // pixels/second
+    FUERZA_ROZAMIENTO = 100; // Aceleración negativa
+    ACELERACION = 700;       // aceleración
+    CADENCIA_DISPARO = 200;
+    MONSTER_HEALTH = 1;         // golpes que aguantan los monstruos
+
+    constructor() {
+        super(1366, 768, Phaser.CANVAS, 'gameDiv');
+        this.state.add('main', mainState);
+        this.state.start('main');
+    }
+}
+
+class mainState extends Phaser.State {
+
+    // game:Phaser.Game;
+    game:SimpleGame;
 
     preload():void {
         super.preload();
@@ -25,72 +47,112 @@ class mainState extends Phaser.State {
         this.load.image('pelota', 'assets/png/ballGrey.png');
         this.load.image('proyectiles', 'assets/png/ballBlue.png');
         this.load.image('ladrilloVerde', 'assets/png/element_green_rectangle.png');
+        this.load.image('enemigo1', 'assets/png/enemigo1.png')
     }
 
     create():void {
         super.create();
 
-        this.game.stage.backgroundColor = "#4488AA";
+        this.game.stage.backgroundColor = "#0000";
         this.physics.arcade.checkCollision.down = false;
 
         // Creamos los elementos
         this.createJugador();
-        this.createProyectiles()
+        this.createProyectiles();
+        this.createMonsters();
     }
 
     createJugador() {
         // Coordenadas y posicion de la barra
-        this.jugador = this.add.sprite(this.world.centerX, 0, 'nave');
-        this.jugador.x = this.world.centerX;
-        this.jugador.y = this.world.height - this.jugador.height - 5;
-        this.jugador.anchor.setTo(0.5, 0.5);
+        this.game.jugador = this.add.sprite(this.world.centerX, 0, 'nave');
+        this.game.jugador.x = this.world.centerX;
+        this.game.jugador.y = this.world.height - this.game.jugador.height - 5;
+        this.game.jugador.anchor.setTo(0.5, 0.5);
 
         // Para el movimiento de la barra con las teclas
-        this.cursor = this.input.keyboard.createCursorKeys();
+        this.game.cursor = this.input.keyboard.createCursorKeys();
 
         // Activamos la fisica y la hacemos rebotar con los bordes
-        this.physics.enable(this.jugador);
-        this.jugador.body.collideWorldBounds = true;
+        this.physics.enable(this.game.jugador);
+        this.game.jugador.body.collideWorldBounds = true;
 
         // Fuerza de rozamiento para que la barra frene
-        this.jugador.body.drag.setTo(this.FUERZA_ROZAMIENTO, this.FUERZA_ROZAMIENTO); // x, y
+        this.game.jugador.body.drag.setTo(this.game.FUERZA_ROZAMIENTO, this.game.FUERZA_ROZAMIENTO); // x, y
 
         // Le damos una velocidad maxima
-        this.jugador.body.maxVelocity.setTo(this.VELOCIDAD_MAXIMA, 0); // x, y
-        this.jugador.body.bounce.setTo(0);  // Que no rebote
-        this.jugador.body.immovable = true;
+        this.game.jugador.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
+        this.game.jugador.body.bounce.setTo(0);  // Que no rebote
+        this.game.jugador.body.immovable = true;
     }
 
     createProyectiles() {
-        this.proyectiles = this.add.group();
-        this.proyectiles.enableBody = true;
-        this.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-        this.proyectiles.createMultiple(20, 'proyectiles');
+        this.game.proyectiles = this.add.group();
+        this.game.proyectiles.enableBody = true;
+        this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
+        this.game.proyectiles.createMultiple(20, 'proyectiles');
 
-        this.proyectiles.setAll('anchor.x', 0.5);
-        this.proyectiles.setAll('anchor.y', 0.5);
-        this.proyectiles.setAll('scale.x', 0.5);
-        this.proyectiles.setAll('scale.y', 0.5);
-        this.proyectiles.setAll('outOfBoundsKill', true);
-        this.proyectiles.setAll('checkWorldBounds', true);
+        this.game.proyectiles.setAll('anchor.x', 0.5);
+        this.game.proyectiles.setAll('anchor.y', 0.5);
+        this.game.proyectiles.setAll('scale.x', 0.5);
+        this.game.proyectiles.setAll('scale.y', 0.5);
+        this.game.proyectiles.setAll('outOfBoundsKill', true);
+        this.game.proyectiles.setAll('checkWorldBounds', true);
     };
+
+    private createMonsters() {
+
+        // Anyadimos el recolectable a un grupo
+        this.game.enemigos = this.add.group();
+        this.game.enemigos.enableBody = true;
+
+        // Posiciones en las que generaremos los ladrillos
+        var monstruosPorLinea = 20;
+        var numeroFilas = 4;
+
+        // Tamanyo de los ladrillos
+        var anchuraMonstruo = 64;
+        var alturoaMonstruo = 32;
+
+        // For para llenar array de coordeandas
+        for (var posFila = 0; posFila < numeroFilas; posFila++) {
+            for (var posColumna = 0; posColumna < monstruosPorLinea; posColumna++) {
+
+                // Coordenadas en las que mostraremos el ladrillo
+                var x = anchuraMonstruo * posColumna;
+                var y = posFila * (alturoaMonstruo + 1);
+
+                // instanciamos el Sprite
+                var enemigo = new Enemigos(this.game, x, y, 'enemigo1', 0);
+
+
+                // mostramos el Sprite por pantalla
+                this.add.existing(enemigo);
+                this.game.enemigos.add(enemigo);
+            }
+
+        }
+    }
 
     fire():void {
 
-        if (this.time.now > this.nextFire) {
+        if (this.time.now > this.game.nextFire) {
 
-            var bullet = this.proyectiles.getFirstDead();
+            var bullet = this.game.proyectiles.getFirstDead();
 
             if (bullet) {
-                var length = this.jugador.width * 0.5 + 20;
+                var length = this.game.jugador.width * 0.5 + 20;
 
-                bullet.reset(this.jugador.x, this.jugador.y - this.jugador.height);
+                bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
 
                 bullet.body.velocity.setTo(0, -500);
 
-                this.nextFire = this.time.now + this.CADENCIA_DISPARO;
+                this.game.nextFire = this.time.now + this.game.CADENCIA_DISPARO;
             }
         }
+    }
+
+    private bajarEnemigos(enemigo:Enemigos) {
+        this.game.enemigos.setAll('velocity.x', -20);
     }
 
     update():void {
@@ -102,43 +164,43 @@ class mainState extends Phaser.State {
         }
 
         // Movimientos en el eje X
-        if (this.cursor.left.isDown) {
-            this.jugador.body.acceleration.x = -this.ACELERACION;
-        } else if (this.cursor.right.isDown) {
-            this.jugador.body.acceleration.x = this.ACELERACION;
+        if (this.game.cursor.left.isDown) {
+            this.game.jugador.body.acceleration.x = -this.game.ACELERACION;
+        } else if (this.game.cursor.right.isDown) {
+            this.game.jugador.body.acceleration.x = this.game.ACELERACION;
         }
 
-        this.jugador.position.x = this.game.input.x;
-    }
-}
-
-class Ladrillo extends Phaser.Sprite {
-
-    constructor(game:Phaser.Game, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
-        super(game, x, y, key, frame);
+        this.game.jugador.position.x = this.game.input.x;
     }
 }
 
 class Enemigos extends Phaser.Sprite {
 
-    constructor(game:Phaser.Game, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
+    nextFire = 0;
+    tiempoMovimiento = 800;
+
+    constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
         super(game, x, y, key, frame);
+
+        this.game.physics.enable(this);
+        this.checkWorldBounds = true;
+        this.body.collideWorldBounds = true;
+        this.body.enableBody = true;
+
     }
-}
 
+    update():void {
 
-class SimpleGame {
+        super.update();
 
-    game:Phaser.Game;
+        if (this.game.time.now > this.nextFire) {
+            this.x = this.x + 10;
 
-    constructor() {
-        this.game = new Phaser.Game(600, 600, Phaser.AUTO, 'gameDiv');
-
-        this.game.state.add('main', mainState);
-        this.game.state.start('main');
+            this.nextFire = this.game.time.now + this.tiempoMovimiento;
+        }
     }
 }
 
 window.onload = () => {
-    var game = new SimpleGame();
+    new SimpleGame();
 };
