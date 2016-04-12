@@ -11,21 +11,22 @@ class SimpleGame extends Phaser.Game {
 
     // Grupos
     enemigos:Phaser.Group;
+    explosiones:Phaser.Group;
 
     // Sprites
     jugador:Phaser.Sprite;
     cursor:Phaser.CursorKeys;
     proyectiles:Phaser.Group;
 
-
+    // Variables auxiliares
     nextFire = 0;
 
     // Constantes
     VELOCIDAD_MAXIMA = 450;  // pixels/second
     FUERZA_ROZAMIENTO = 100; // Aceleración negativa
     ACELERACION = 700;       // aceleración
-    CADENCIA_DISPARO = 200;
-    MONSTER_HEALTH = 1;         // golpes que aguantan los monstruos
+    CADENCIA_DISPARO = 200;  // Tiempo entre disparo y disparo
+    MONSTER_HEALTH = 1;      // golpes que aguantan los monstruos
 
     constructor() {
         super(1366, 768, Phaser.CANVAS, 'gameDiv');
@@ -47,12 +48,14 @@ class mainState extends Phaser.State {
         this.load.image('pelota', 'assets/png/ballGrey.png');
         this.load.image('proyectiles', 'assets/png/ballBlue.png');
         this.load.image('ladrilloVerde', 'assets/png/element_green_rectangle.png');
-        this.load.image('enemigo1', 'assets/png/enemigo1.png')
+        this.load.image('enemigo1', 'assets/png/enemigo1.png');
+        this.load.image('explosion', 'assets/png/explosion.png');
     }
 
     create():void {
         super.create();
 
+        // Background
         this.game.stage.backgroundColor = "#0000";
         this.physics.arcade.checkCollision.down = false;
 
@@ -60,6 +63,7 @@ class mainState extends Phaser.State {
         this.createJugador();
         this.createProyectiles();
         this.createMonsters();
+        this.createExplosions();
     }
 
     createJugador() {
@@ -97,6 +101,18 @@ class mainState extends Phaser.State {
         this.game.proyectiles.setAll('scale.y', 0.5);
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
+    };
+
+    private createExplosions() {
+        this.game.explosiones = this.add.group();
+        this.game.explosiones.createMultiple(20, 'explosion');
+
+        this.game.explosiones.setAll('anchor.x', 0.5);
+        this.game.explosiones.setAll('anchor.y', 0.5);
+
+        this.game.explosiones.forEach((explosion:Phaser.Sprite) => {
+            explosion.loadTexture('explosion');
+        }, this);
     };
 
     private createMonsters() {
@@ -138,6 +154,7 @@ class mainState extends Phaser.State {
             var bullet = this.game.proyectiles.getFirstDead();
 
             if (bullet) {
+
                 var length = this.game.jugador.width * 0.5 + 20;
 
                 bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
@@ -149,15 +166,50 @@ class mainState extends Phaser.State {
         }
     }
 
-    private reboteEnemigos(enemigo:Enemigos) {
-        enemigo.setVelocidad(-10);
+    explosion(x:number, y:number):void {
 
+        // Sacamos el primer sprite muerto del group
+        var explosion:Phaser.Sprite = this.game.explosiones.getFirstDead();
+
+        if (explosion) {
+
+            // Colocamos la explosión con su transpariencia y posición
+            explosion.reset(
+                x - this.rnd.integerInRange(0, 5) + this.rnd.integerInRange(0, 5),
+                y - this.rnd.integerInRange(0, 5) + this.rnd.integerInRange(0, 5) - 30
+            );
+            explosion.alpha = 0.6;
+            explosion.angle = this.rnd.angle();
+            explosion.scale.setTo(this.rnd.realInRange(0.5, 0.75));
+
+            // Hacemos que varíe su tamaño para dar la sensación de que el humo se disipa
+            this.add.tween(explosion.scale).to({
+                x: 0, y: 0
+            }, 500).start();
+
+            var tween = this.add.tween(explosion).to({alpha: 0}, 500);
+
+            // Una vez terminado matámos la explosión
+            tween.onComplete.add(() => {
+                explosion.kill();
+            });
+
+            tween.start();
+        }
+    }
+
+    matarMonstruos(enemigo:Enemigos, proyectil:Phaser.Sprite) {
+        this.explosion(proyectil.x, proyectil.y);
+        enemigo.kill();
+        proyectil.kill();
     }
 
     update():void {
         super.update();
 
-        this.physics.arcade.collide(this.world, this.game.enemigos, this.reboteEnemigos, null, this);
+        // Colisions
+        this.physics.arcade.collide(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
+
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
@@ -176,33 +228,59 @@ class mainState extends Phaser.State {
 
 class Enemigos extends Phaser.Sprite {
 
+    // Games
+    game:SimpleGame;
+
+    // Variables
     private velocidad = 10;
-    nextFire = 0;
-    tiempoMovimiento = 800;
+    private nextMovement = 0;
+    private tiempoMovimiento = 800;
 
     // Constructor de los enemigos
     constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
         super(game, x, y, key, frame);
 
         this.game.physics.enable(this);
-        this.checkWorldBounds = true;
         this.body.collideWorldBounds = true;
         this.body.enableBody = true;
     }
 
-    update():void {
 
+    update():void {
         super.update();
 
         // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
-        if (this.game.time.now > this.nextFire) {
+        if (this.game.time.now > this.nextMovement) {
             this.x = this.x + this.velocidad;
-            this.nextFire = this.game.time.now + this.tiempoMovimiento;
+            this.nextMovement = this.game.time.now + this.tiempoMovimiento;
+
+            if (this.x >= this.game.width - this.width || this.x <= 0) {
+                this.reboteEnemigos(this)
+            }
         }
     }
 
-    setVelocidad(value:number) {
+    invierteVelocidad() {
+        this.velocidad *= -1;
+    }
+
+    // Metodos
+
+    reboteEnemigos(enemigo:Enemigos) {
+        this.game.enemigos.callAll('invierteVelocidad');
+        //this.game.enemigos.setAll('y', y + 20);
+    }
+
+    // Setters
+
+    setVelocidad(value:number):void {
         this.velocidad = value;
+    }
+
+    // Getters
+
+    getVelocidad():number {
+        return this.velocidad;
     }
 }
 

@@ -1,23 +1,21 @@
 /// <reference path="phaser/phaser.d.ts"/>
 var __extends = (this && this.__extends) || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-        function __() {
-            this.constructor = d;
-        }
-
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 var Point = Phaser.Point;
 var SimpleGame = (function (_super) {
     __extends(SimpleGame, _super);
     function SimpleGame() {
         _super.call(this, 1366, 768, Phaser.CANVAS, 'gameDiv');
+        // Variables auxiliares
         this.nextFire = 0;
         // Constantes
         this.VELOCIDAD_MAXIMA = 450; // pixels/second
         this.FUERZA_ROZAMIENTO = 100; // Aceleración negativa
         this.ACELERACION = 700; // aceleración
-        this.CADENCIA_DISPARO = 200;
+        this.CADENCIA_DISPARO = 200; // Tiempo entre disparo y disparo
         this.MONSTER_HEALTH = 1; // golpes que aguantan los monstruos
         this.state.add('main', mainState);
         this.state.start('main');
@@ -37,15 +35,18 @@ var mainState = (function (_super) {
         this.load.image('proyectiles', 'assets/png/ballBlue.png');
         this.load.image('ladrilloVerde', 'assets/png/element_green_rectangle.png');
         this.load.image('enemigo1', 'assets/png/enemigo1.png');
+        this.load.image('explosion', 'assets/png/explosion.png');
     };
     mainState.prototype.create = function () {
         _super.prototype.create.call(this);
+        // Background
         this.game.stage.backgroundColor = "#0000";
         this.physics.arcade.checkCollision.down = false;
         // Creamos los elementos
         this.createJugador();
         this.createProyectiles();
         this.createMonsters();
+        this.createExplosions();
     };
     mainState.prototype.createJugador = function () {
         // Coordenadas y posicion de la barra
@@ -77,6 +78,17 @@ var mainState = (function (_super) {
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
     };
+    ;
+    mainState.prototype.createExplosions = function () {
+        this.game.explosiones = this.add.group();
+        this.game.explosiones.createMultiple(20, 'explosion');
+        this.game.explosiones.setAll('anchor.x', 0.5);
+        this.game.explosiones.setAll('anchor.y', 0.5);
+        this.game.explosiones.forEach(function (explosion) {
+            explosion.loadTexture('explosion');
+        }, this);
+    };
+    ;
     mainState.prototype.createMonsters = function () {
         // Anyadimos el recolectable a un grupo
         this.game.enemigos = this.add.group();
@@ -112,12 +124,36 @@ var mainState = (function (_super) {
             }
         }
     };
-    mainState.prototype.reboteEnemigos = function (enemigo) {
-        enemigo.setVelocidad(-10);
+    mainState.prototype.explosion = function (x, y) {
+        // Sacamos el primer sprite muerto del group
+        var explosion = this.game.explosiones.getFirstDead();
+        if (explosion) {
+            // Colocamos la explosión con su transpariencia y posición
+            explosion.reset(x - this.rnd.integerInRange(0, 5) + this.rnd.integerInRange(0, 5), y - this.rnd.integerInRange(0, 5) + this.rnd.integerInRange(0, 5) - 30);
+            explosion.alpha = 0.6;
+            explosion.angle = this.rnd.angle();
+            explosion.scale.setTo(this.rnd.realInRange(0.5, 0.75));
+            // Hacemos que varíe su tamaño para dar la sensación de que el humo se disipa
+            this.add.tween(explosion.scale).to({
+                x: 0, y: 0
+            }, 500).start();
+            var tween = this.add.tween(explosion).to({ alpha: 0 }, 500);
+            // Una vez terminado matámos la explosión
+            tween.onComplete.add(function () {
+                explosion.kill();
+            });
+            tween.start();
+        }
+    };
+    mainState.prototype.matarMonstruos = function (enemigo, proyectil) {
+        this.explosion(proyectil.x, proyectil.y);
+        enemigo.kill();
+        proyectil.kill();
     };
     mainState.prototype.update = function () {
         _super.prototype.update.call(this);
-        this.physics.arcade.collide(this.world, this.game.enemigos, this.reboteEnemigos, null, this);
+        // Colisions
+        this.physics.arcade.collide(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
@@ -138,24 +174,40 @@ var Enemigos = (function (_super) {
     // Constructor de los enemigos
     function Enemigos(game, x, y, key, frame) {
         _super.call(this, game, x, y, key, frame);
+        // Variables
         this.velocidad = 10;
-        this.nextFire = 0;
+        this.nextMovement = 0;
         this.tiempoMovimiento = 800;
         this.game.physics.enable(this);
-        this.checkWorldBounds = true;
         this.body.collideWorldBounds = true;
         this.body.enableBody = true;
     }
     Enemigos.prototype.update = function () {
         _super.prototype.update.call(this);
         // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
-        if (this.game.time.now > this.nextFire) {
+        if (this.game.time.now > this.nextMovement) {
             this.x = this.x + this.velocidad;
-            this.nextFire = this.game.time.now + this.tiempoMovimiento;
+            this.nextMovement = this.game.time.now + this.tiempoMovimiento;
+            if (this.x >= this.game.width - this.width || this.x <= 0) {
+                this.reboteEnemigos(this);
+            }
         }
     };
+    Enemigos.prototype.invierteVelocidad = function () {
+        this.velocidad *= -1;
+    };
+    // Metodos
+    Enemigos.prototype.reboteEnemigos = function (enemigo) {
+        this.game.enemigos.callAll('invierteVelocidad');
+        //this.game.enemigos.setAll('y', y + 20);
+    };
+    // Setters
     Enemigos.prototype.setVelocidad = function (value) {
         this.velocidad = value;
+    };
+    // Getters
+    Enemigos.prototype.getVelocidad = function () {
+        return this.velocidad;
     };
     return Enemigos;
 })(Phaser.Sprite);
