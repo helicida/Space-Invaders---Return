@@ -22,7 +22,6 @@ var SimpleGame = (function (_super) {
         this.state.add('main', mainState);
         this.state.start('main');
     }
-
     return SimpleGame;
 })(Phaser.Game);
 var mainState = (function (_super) {
@@ -113,11 +112,12 @@ var mainState = (function (_super) {
             }
         }
     };
-    mainState.prototype.bajarEnemigos = function (enemigo) {
-        this.game.enemigos.setAll('velocity.x', -20);
+    mainState.prototype.reboteEnemigos = function (enemigo) {
+        enemigo.setVelocidad(-10);
     };
     mainState.prototype.update = function () {
         _super.prototype.update.call(this);
+        this.physics.arcade.collide(this.world, this.game.enemigos, this.reboteEnemigos, null, this);
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
@@ -135,8 +135,10 @@ var mainState = (function (_super) {
 })(Phaser.State);
 var Enemigos = (function (_super) {
     __extends(Enemigos, _super);
+    // Constructor de los enemigos
     function Enemigos(game, x, y, key, frame) {
         _super.call(this, game, x, y, key, frame);
+        this.velocidad = 10;
         this.nextFire = 0;
         this.tiempoMovimiento = 800;
         this.game.physics.enable(this);
@@ -144,13 +146,16 @@ var Enemigos = (function (_super) {
         this.body.collideWorldBounds = true;
         this.body.enableBody = true;
     }
-
     Enemigos.prototype.update = function () {
         _super.prototype.update.call(this);
+        // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
         if (this.game.time.now > this.nextFire) {
-            this.x = this.x + 10;
+            this.x = this.x + this.velocidad;
             this.nextFire = this.game.time.now + this.tiempoMovimiento;
         }
+    };
+    Enemigos.prototype.setVelocidad = function (value) {
+        this.velocidad = value;
     };
     return Enemigos;
 })(Phaser.Sprite);

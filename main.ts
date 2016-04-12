@@ -124,12 +124,10 @@ class mainState extends Phaser.State {
                 // instanciamos el Sprite
                 var enemigo = new Enemigos(this.game, x, y, 'enemigo1', 0);
 
-
                 // mostramos el Sprite por pantalla
                 this.add.existing(enemigo);
                 this.game.enemigos.add(enemigo);
             }
-
         }
     }
 
@@ -151,13 +149,15 @@ class mainState extends Phaser.State {
         }
     }
 
-    private bajarEnemigos(enemigo:Enemigos) {
-        this.game.enemigos.setAll('velocity.x', -20);
+    private reboteEnemigos(enemigo:Enemigos) {
+        enemigo.setVelocidad(-10);
+
     }
 
     update():void {
         super.update();
 
+        this.physics.arcade.collide(this.world, this.game.enemigos, this.reboteEnemigos, null, this);
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
@@ -176,9 +176,11 @@ class mainState extends Phaser.State {
 
 class Enemigos extends Phaser.Sprite {
 
+    private velocidad = 10;
     nextFire = 0;
     tiempoMovimiento = 800;
 
+    // Constructor de los enemigos
     constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
         super(game, x, y, key, frame);
 
@@ -186,18 +188,21 @@ class Enemigos extends Phaser.Sprite {
         this.checkWorldBounds = true;
         this.body.collideWorldBounds = true;
         this.body.enableBody = true;
-
     }
 
     update():void {
 
         super.update();
 
+        // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
         if (this.game.time.now > this.nextFire) {
-            this.x = this.x + 10;
-
+            this.x = this.x + this.velocidad;
             this.nextFire = this.game.time.now + this.tiempoMovimiento;
         }
+    }
+
+    setVelocidad(value:number) {
+        this.velocidad = value;
     }
 }
 
