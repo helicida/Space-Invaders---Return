@@ -37,6 +37,7 @@ var mainState = (function (_super) {
         this.load.image('nave', 'assets/png/spaceship.png');
         this.load.image('pelota', 'assets/png/ballGrey.png');
         this.load.image('proyectiles', 'assets/png/ballBlue.png');
+        this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
         this.load.image('ladrilloVerde', 'assets/png/element_green_rectangle.png');
         this.load.image('enemigo1', 'assets/png/enemigo1.png');
         this.load.image('explosion', 'assets/png/explosion.png');
@@ -84,11 +85,12 @@ var mainState = (function (_super) {
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
     };
+    ;
     mainState.prototype.createProyectilesEnemigos = function () {
         this.game.proyectilesEnemigos = this.add.group();
         this.game.proyectilesEnemigos.enableBody = true;
         this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
-        this.game.proyectilesEnemigos.createMultiple(20, 'proyectiles');
+        this.game.proyectilesEnemigos.createMultiple(20, 'enemyShoot');
         this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
         this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
         this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
@@ -96,6 +98,7 @@ var mainState = (function (_super) {
         this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
         this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
+    ;
     mainState.prototype.createExplosions = function () {
         this.game.explosiones = this.add.group();
         this.game.explosiones.createMultiple(20, 'explosion');
@@ -105,6 +108,7 @@ var mainState = (function (_super) {
             explosion.loadTexture('explosion');
         }, this);
     };
+    ;
     mainState.prototype.createMonsters = function () {
         // Anyadimos el recolectable a un grupo
         this.game.enemigos = this.add.group();
@@ -213,11 +217,13 @@ var Enemigo = (function (_super) {
     // Constructor de los enemigos
     function Enemigo(game, x, y, key, frame) {
         _super.call(this, game, x, y, key, frame);
+        // Variables auxiliares
+        this.nextFire = 0;
+        this.CADENCIA_DISPARO = 1000;
         this.game = game;
         this.game.physics.enable(this);
         this.body.enableBody = true;
     }
-
     Enemigo.prototype.update = function () {
         _super.prototype.update.call(this);
         if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20) && this.health > 0) {
@@ -226,12 +232,13 @@ var Enemigo = (function (_super) {
     };
     // Metodos
     Enemigo.prototype.fireEnemigos = function (enemigo) {
-        if (this.game.time.now > this.game.nextFire) {
-            var bullet = this.game.proyectilesEnemigos.getFirstDead();
-            if (bullet) {
-                bullet.reset(enemigo.x, enemigo.y);
-                bullet.body.velocity.setTo(0, 500);
-                this.game.nextFire = this.game.time.now + this.game.CADENCIA_DISPARO;
+        var randomValue = this.game.rnd.integerInRange(1, 100);
+        if (this.game.time.now > this.nextFire && randomValue == 5) {
+            var proyectilEnemigo = this.game.proyectilesEnemigos.getFirstDead();
+            if (proyectilEnemigo) {
+                proyectilEnemigo.reset(enemigo.x, enemigo.y);
+                proyectilEnemigo.body.velocity.setTo(0, 500);
+                this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
             }
         }
     };

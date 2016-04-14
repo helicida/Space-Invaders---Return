@@ -54,6 +54,7 @@ class mainState extends Phaser.State {
         this.load.image('nave', 'assets/png/spaceship.png');
         this.load.image('pelota', 'assets/png/ballGrey.png');
         this.load.image('proyectiles', 'assets/png/ballBlue.png');
+        this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
         this.load.image('ladrilloVerde', 'assets/png/element_green_rectangle.png');
         this.load.image('enemigo1', 'assets/png/enemigo1.png');
         this.load.image('explosion', 'assets/png/explosion.png');
@@ -117,7 +118,7 @@ class mainState extends Phaser.State {
         this.game.proyectilesEnemigos = this.add.group();
         this.game.proyectilesEnemigos.enableBody = true;
         this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
-        this.game.proyectilesEnemigos.createMultiple(20, 'proyectiles');
+        this.game.proyectilesEnemigos.createMultiple(20, 'enemyShoot');
 
         this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
         this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
@@ -284,6 +285,10 @@ class Enemigo extends Phaser.Sprite {
     // Games
     game:SimpleGame;
 
+    // Variables auxiliares
+    nextFire = 0;
+    CADENCIA_DISPARO = 1000;
+
     // Constructor de los enemigos
     constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
         super(game, x, y, key, frame);
@@ -305,17 +310,19 @@ class Enemigo extends Phaser.Sprite {
 
     fireEnemigos(enemigo:Enemigo):void {
 
-        if (this.game.time.now > this.game.nextFire) {
+        var randomValue = this.game.rnd.integerInRange(1, 100);
 
-            var bullet = this.game.proyectilesEnemigos.getFirstDead();
+        if (this.game.time.now > this.nextFire && randomValue == 5) {
 
-            if (bullet) {
+            var proyectilEnemigo = this.game.proyectilesEnemigos.getFirstDead();
 
-                bullet.reset(enemigo.x, enemigo.y);
+            if (proyectilEnemigo) {
 
-                bullet.body.velocity.setTo(0, 500);
+                proyectilEnemigo.reset(enemigo.x, enemigo.y);
 
-                this.game.nextFire = this.game.time.now + this.game.CADENCIA_DISPARO;
+                proyectilEnemigo.body.velocity.setTo(0, 500);
+
+                this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
             }
         }
     }
