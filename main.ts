@@ -200,6 +200,7 @@ class mainState extends Phaser.State {
 
     matarMonstruos(enemigo:Enemigos, proyectil:Phaser.Sprite) {
         this.explosion(proyectil.x, proyectil.y);
+        enemigo.health = 0;
         enemigo.kill();
         proyectil.kill();
     }
@@ -208,7 +209,7 @@ class mainState extends Phaser.State {
         super.update();
 
         // Colisions
-        this.physics.arcade.collide(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.overlap(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
 
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
@@ -240,8 +241,8 @@ class Enemigos extends Phaser.Sprite {
     constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
         super(game, x, y, key, frame);
 
+        this.game = game;
         this.game.physics.enable(this);
-        this.body.collideWorldBounds = true;
         this.body.enableBody = true;
     }
 
@@ -249,26 +250,34 @@ class Enemigos extends Phaser.Sprite {
     update():void {
         super.update();
 
-        // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
-        if (this.game.time.now > this.nextMovement) {
-            this.x = this.x + this.velocidad;
-            this.nextMovement = this.game.time.now + this.tiempoMovimiento;
+        if (this.health > 0) {
 
-            if (this.x >= this.game.width - this.width || this.x <= 0) {
-                this.reboteEnemigos(this)
+            // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
+            if (this.game.time.now > this.nextMovement) {
+
+                this.x = this.x + this.velocidad;
+                this.nextMovement = this.game.time.now + this.tiempoMovimiento;
+
+                if ((this.x >= this.game.width - 45) || (this.x <= 0)) {
+                    this.reboteEnemigos(this);
+                }
             }
         }
-    }
-
-    invierteVelocidad() {
-        this.velocidad *= -1;
     }
 
     // Metodos
 
     reboteEnemigos(enemigo:Enemigos) {
-        this.game.enemigos.callAll('invierteVelocidad');
-        //this.game.enemigos.setAll('y', y + 20);
+        this.game.enemigos.callAll('invierteVelocidad', null);
+        this.game.enemigos.callAll('bajar', null, -20);
+    }
+
+    bajar(px:number) {
+        this.y = this.y - px;
+    }
+
+    invierteVelocidad() {
+        this.velocidad *= -1;
     }
 
     // Setters

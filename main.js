@@ -78,7 +78,6 @@ var mainState = (function (_super) {
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
     };
-    ;
     mainState.prototype.createExplosions = function () {
         this.game.explosiones = this.add.group();
         this.game.explosiones.createMultiple(20, 'explosion');
@@ -88,7 +87,6 @@ var mainState = (function (_super) {
             explosion.loadTexture('explosion');
         }, this);
     };
-    ;
     mainState.prototype.createMonsters = function () {
         // Anyadimos el recolectable a un grupo
         this.game.enemigos = this.add.group();
@@ -147,13 +145,14 @@ var mainState = (function (_super) {
     };
     mainState.prototype.matarMonstruos = function (enemigo, proyectil) {
         this.explosion(proyectil.x, proyectil.y);
+        enemigo.health = 0;
         enemigo.kill();
         proyectil.kill();
     };
     mainState.prototype.update = function () {
         _super.prototype.update.call(this);
         // Colisions
-        this.physics.arcade.collide(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.overlap(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
@@ -178,28 +177,33 @@ var Enemigos = (function (_super) {
         this.velocidad = 10;
         this.nextMovement = 0;
         this.tiempoMovimiento = 800;
+        this.game = game;
         this.game.physics.enable(this);
-        this.body.collideWorldBounds = true;
         this.body.enableBody = true;
     }
     Enemigos.prototype.update = function () {
         _super.prototype.update.call(this);
-        // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
-        if (this.game.time.now > this.nextMovement) {
-            this.x = this.x + this.velocidad;
-            this.nextMovement = this.game.time.now + this.tiempoMovimiento;
-            if (this.x >= this.game.width - this.width || this.x <= 0) {
-                this.reboteEnemigos(this);
+        if (this.health > 0) {
+            // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
+            if (this.game.time.now > this.nextMovement) {
+                this.x = this.x + this.velocidad;
+                this.nextMovement = this.game.time.now + this.tiempoMovimiento;
+                if ((this.x >= this.game.width - 45) || (this.x <= 0)) {
+                    this.reboteEnemigos(this);
+                }
             }
         }
     };
-    Enemigos.prototype.invierteVelocidad = function () {
-        this.velocidad *= -1;
-    };
     // Metodos
     Enemigos.prototype.reboteEnemigos = function (enemigo) {
-        this.game.enemigos.callAll('invierteVelocidad');
-        //this.game.enemigos.setAll('y', y + 20);
+        this.game.enemigos.callAll('invierteVelocidad', null);
+        this.game.enemigos.callAll('bajar', null, -20);
+    };
+    Enemigos.prototype.bajar = function (px) {
+        this.y = this.y - px;
+    };
+    Enemigos.prototype.invierteVelocidad = function () {
+        this.velocidad *= -1;
     };
     // Setters
     Enemigos.prototype.setVelocidad = function (value) {
