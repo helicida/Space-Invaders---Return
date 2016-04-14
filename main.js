@@ -9,6 +9,10 @@ var SimpleGame = (function (_super) {
     __extends(SimpleGame, _super);
     function SimpleGame() {
         _super.call(this, 1366, 768, Phaser.CANVAS, 'gameDiv');
+        // Variables
+        this.velocidad = 10;
+        this.nextMovement = 0;
+        this.tiempoMovimiento = 800;
         // Variables auxiliares
         this.nextFire = 0;
         // Constantes
@@ -45,6 +49,7 @@ var mainState = (function (_super) {
         // Creamos los elementos
         this.createJugador();
         this.createProyectiles();
+        this.createProyectilesEnemigos();
         this.createMonsters();
         this.createExplosions();
     };
@@ -65,6 +70,7 @@ var mainState = (function (_super) {
         this.game.jugador.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
         this.game.jugador.body.bounce.setTo(0); // Que no rebote
         this.game.jugador.body.immovable = true;
+        this.game.jugador.health = 1;
     };
     mainState.prototype.createProyectiles = function () {
         this.game.proyectiles = this.add.group();
@@ -77,6 +83,18 @@ var mainState = (function (_super) {
         this.game.proyectiles.setAll('scale.y', 0.5);
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
+    };
+    mainState.prototype.createProyectilesEnemigos = function () {
+        this.game.proyectilesEnemigos = this.add.group();
+        this.game.proyectilesEnemigos.enableBody = true;
+        this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
+        this.game.proyectilesEnemigos.createMultiple(20, 'proyectiles');
+        this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
+        this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
+        this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
+        this.game.proyectilesEnemigos.setAll('scale.y', 0.5);
+        this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
+        this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
     mainState.prototype.createExplosions = function () {
         this.game.explosiones = this.add.group();
@@ -104,7 +122,7 @@ var mainState = (function (_super) {
                 var x = anchuraMonstruo * posColumna;
                 var y = posFila * (alturoaMonstruo + 1);
                 // instanciamos el Sprite
-                var enemigo = new Enemigos(this.game, x, y, 'enemigo1', 0);
+                var enemigo = new Enemigo(this.game, x, y, 'enemigo1', 0);
                 // mostramos el Sprite por pantalla
                 this.add.existing(enemigo);
                 this.game.enemigos.add(enemigo);
@@ -115,7 +133,6 @@ var mainState = (function (_super) {
         if (this.time.now > this.game.nextFire) {
             var bullet = this.game.proyectiles.getFirstDead();
             if (bullet) {
-                var length = this.game.jugador.width * 0.5 + 20;
                 bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
                 bullet.body.velocity.setTo(0, -500);
                 this.game.nextFire = this.time.now + this.game.CADENCIA_DISPARO;
@@ -149,13 +166,36 @@ var mainState = (function (_super) {
         enemigo.kill();
         proyectil.kill();
     };
+    mainState.prototype.danyarJugador = function (proyectil, jugador) {
+        this.explosion(proyectil.x, proyectil.y);
+        jugador.health -= 1;
+        if (jugador.health == 0) {
+            jugador.kill();
+        }
+    };
     mainState.prototype.update = function () {
         _super.prototype.update.call(this);
         // Colisions
         this.physics.arcade.overlap(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.collide(this.game.proyectilesEnemigos, this.game.jugador, this.danyarJugador, null, this);
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
+        }
+        // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
+        if (this.game.time.now > this.game.nextMovement) {
+            this.game.enemigos.x = this.game.enemigos.x + this.game.velocidad;
+            this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
+            if ((this.game.enemigos.x < 0) || (this.game.enemigos.x + this.game.enemigos.width > this.game.world.width)) {
+                this.game.enemigos.y += 50;
+                this.game.velocidad *= -1;
+                if (this.game.enemigos.x < 0) {
+                    this.game.enemigos.x = 10;
+                }
+                if (this.game.enemigos.x > this.game.world.width) {
+                    this.game.enemigos.x = this.game.world.width - this.game.enemigos.width - 10;
+                }
+            }
         }
         // Movimientos en el eje X
         if (this.game.cursor.left.isDown) {
@@ -168,52 +208,34 @@ var mainState = (function (_super) {
     };
     return mainState;
 })(Phaser.State);
-var Enemigos = (function (_super) {
-    __extends(Enemigos, _super);
+var Enemigo = (function (_super) {
+    __extends(Enemigo, _super);
     // Constructor de los enemigos
-    function Enemigos(game, x, y, key, frame) {
+    function Enemigo(game, x, y, key, frame) {
         _super.call(this, game, x, y, key, frame);
-        // Variables
-        this.velocidad = 10;
-        this.nextMovement = 0;
-        this.tiempoMovimiento = 800;
         this.game = game;
         this.game.physics.enable(this);
         this.body.enableBody = true;
     }
-    Enemigos.prototype.update = function () {
+
+    Enemigo.prototype.update = function () {
         _super.prototype.update.call(this);
-        if (this.health > 0) {
-            // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
-            if (this.game.time.now > this.nextMovement) {
-                this.x = this.x + this.velocidad;
-                this.nextMovement = this.game.time.now + this.tiempoMovimiento;
-                if ((this.x >= this.game.width - 45) || (this.x <= 0)) {
-                    this.reboteEnemigos(this);
-                }
-            }
+        if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20) && this.health > 0) {
+            this.fireEnemigos(this);
         }
     };
     // Metodos
-    Enemigos.prototype.reboteEnemigos = function (enemigo) {
-        this.game.enemigos.callAll('invierteVelocidad', null);
-        this.game.enemigos.callAll('bajar', null, -20);
+    Enemigo.prototype.fireEnemigos = function (enemigo) {
+        if (this.game.time.now > this.game.nextFire) {
+            var bullet = this.game.proyectilesEnemigos.getFirstDead();
+            if (bullet) {
+                bullet.reset(enemigo.x, enemigo.y);
+                bullet.body.velocity.setTo(0, 500);
+                this.game.nextFire = this.game.time.now + this.game.CADENCIA_DISPARO;
+            }
+        }
     };
-    Enemigos.prototype.bajar = function (px) {
-        this.y = this.y - px;
-    };
-    Enemigos.prototype.invierteVelocidad = function () {
-        this.velocidad *= -1;
-    };
-    // Setters
-    Enemigos.prototype.setVelocidad = function (value) {
-        this.velocidad = value;
-    };
-    // Getters
-    Enemigos.prototype.getVelocidad = function () {
-        return this.velocidad;
-    };
-    return Enemigos;
+    return Enemigo;
 })(Phaser.Sprite);
 window.onload = function () {
     new SimpleGame();

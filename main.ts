@@ -11,12 +11,19 @@ class SimpleGame extends Phaser.Game {
 
     // Grupos
     enemigos:Phaser.Group;
+
+    // Variables
+    velocidad = 10;
+    nextMovement = 0;
+    tiempoMovimiento = 800;
+
     explosiones:Phaser.Group;
 
     // Sprites
     jugador:Phaser.Sprite;
     cursor:Phaser.CursorKeys;
     proyectiles:Phaser.Group;
+    proyectilesEnemigos:Phaser.Group;
 
     // Variables auxiliares
     nextFire = 0;
@@ -62,6 +69,7 @@ class mainState extends Phaser.State {
         // Creamos los elementos
         this.createJugador();
         this.createProyectiles();
+        this.createProyectilesEnemigos();
         this.createMonsters();
         this.createExplosions();
     }
@@ -87,6 +95,8 @@ class mainState extends Phaser.State {
         this.game.jugador.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
         this.game.jugador.body.bounce.setTo(0);  // Que no rebote
         this.game.jugador.body.immovable = true;
+
+        this.game.jugador.health = 1;
     }
 
     createProyectiles() {
@@ -101,6 +111,20 @@ class mainState extends Phaser.State {
         this.game.proyectiles.setAll('scale.y', 0.5);
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
+    };
+
+    createProyectilesEnemigos() {
+        this.game.proyectilesEnemigos = this.add.group();
+        this.game.proyectilesEnemigos.enableBody = true;
+        this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
+        this.game.proyectilesEnemigos.createMultiple(20, 'proyectiles');
+
+        this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
+        this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
+        this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
+        this.game.proyectilesEnemigos.setAll('scale.y', 0.5);
+        this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
+        this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
 
     private createExplosions() {
@@ -138,7 +162,7 @@ class mainState extends Phaser.State {
                 var y = posFila * (alturoaMonstruo + 1);
 
                 // instanciamos el Sprite
-                var enemigo = new Enemigos(this.game, x, y, 'enemigo1', 0);
+                var enemigo = new Enemigo(this.game, x, y, 'enemigo1', 0);
 
                 // mostramos el Sprite por pantalla
                 this.add.existing(enemigo);
@@ -154,8 +178,6 @@ class mainState extends Phaser.State {
             var bullet = this.game.proyectiles.getFirstDead();
 
             if (bullet) {
-
-                var length = this.game.jugador.width * 0.5 + 20;
 
                 bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
 
@@ -198,11 +220,20 @@ class mainState extends Phaser.State {
         }
     }
 
-    matarMonstruos(enemigo:Enemigos, proyectil:Phaser.Sprite) {
+    matarMonstruos(enemigo:Enemigo, proyectil:Phaser.Sprite) {
         this.explosion(proyectil.x, proyectil.y);
         enemigo.health = 0;
         enemigo.kill();
         proyectil.kill();
+    }
+
+    danyarJugador(proyectil:Phaser.Sprite, jugador:Phaser.Sprite) {
+        this.explosion(proyectil.x, proyectil.y);
+        jugador.health -= 1;
+
+        if (jugador.health == 0) {
+            jugador.kill();
+        }
     }
 
     update():void {
@@ -210,10 +241,31 @@ class mainState extends Phaser.State {
 
         // Colisions
         this.physics.arcade.overlap(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.collide(this.game.proyectilesEnemigos, this.game.jugador, this.danyarJugador, null, this);
 
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
             this.fire();
+        }
+
+        // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
+        if (this.game.time.now > this.game.nextMovement) {
+
+            this.game.enemigos.x = this.game.enemigos.x + this.game.velocidad;
+            this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
+
+            if ((this.game.enemigos.x < 0) || (this.game.enemigos.x + this.game.enemigos.width > this.game.world.width)) {
+                this.game.enemigos.y += 50;
+                this.game.velocidad *= -1;
+
+                if (this.game.enemigos.x < 0) {
+                    this.game.enemigos.x = 10;
+                }
+
+                if (this.game.enemigos.x > this.game.world.width) {
+                    this.game.enemigos.x = this.game.world.width - this.game.enemigos.width - 10;
+                }
+            }
         }
 
         // Movimientos en el eje X
@@ -227,15 +279,10 @@ class mainState extends Phaser.State {
     }
 }
 
-class Enemigos extends Phaser.Sprite {
+class Enemigo extends Phaser.Sprite {
 
     // Games
     game:SimpleGame;
-
-    // Variables
-    private velocidad = 10;
-    private nextMovement = 0;
-    private tiempoMovimiento = 800;
 
     // Constructor de los enemigos
     constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
@@ -246,50 +293,31 @@ class Enemigos extends Phaser.Sprite {
         this.body.enableBody = true;
     }
 
-
     update():void {
         super.update();
 
-        if (this.health > 0) {
-
-            // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
-            if (this.game.time.now > this.nextMovement) {
-
-                this.x = this.x + this.velocidad;
-                this.nextMovement = this.game.time.now + this.tiempoMovimiento;
-
-                if ((this.x >= this.game.width - 45) || (this.x <= 0)) {
-                    this.reboteEnemigos(this);
-                }
-            }
+        if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20) && this.health > 0) {
+            this.fireEnemigos(this);
         }
     }
 
     // Metodos
 
-    reboteEnemigos(enemigo:Enemigos) {
-        this.game.enemigos.callAll('invierteVelocidad', null);
-        this.game.enemigos.callAll('bajar', null, -20);
-    }
+    fireEnemigos(enemigo:Enemigo):void {
 
-    bajar(px:number) {
-        this.y = this.y - px;
-    }
+        if (this.game.time.now > this.game.nextFire) {
 
-    invierteVelocidad() {
-        this.velocidad *= -1;
-    }
+            var bullet = this.game.proyectilesEnemigos.getFirstDead();
 
-    // Setters
+            if (bullet) {
 
-    setVelocidad(value:number):void {
-        this.velocidad = value;
-    }
+                bullet.reset(enemigo.x, enemigo.y);
 
-    // Getters
+                bullet.body.velocity.setTo(0, 500);
 
-    getVelocidad():number {
-        return this.velocidad;
+                this.game.nextFire = this.game.time.now + this.game.CADENCIA_DISPARO;
+            }
+        }
     }
 }
 
