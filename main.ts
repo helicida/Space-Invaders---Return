@@ -6,6 +6,14 @@ class SimpleGame extends Phaser.Game {
 
     game:Phaser.Game;
 
+    // Puntuacion
+    score:number = 0;
+
+    // Textos que mostramos en pantalla
+    scoreText:Phaser.Text;
+    livesText:Phaser.Text;
+    MARGEN_TEXTOS = 25;
+
     // Tilemaps y TileLayers
     tilemap:Phaser.Tilemap;
 
@@ -20,7 +28,7 @@ class SimpleGame extends Phaser.Game {
     explosiones:Phaser.Group;
 
     // Sprites
-    jugador:Phaser.Sprite;
+    jugador:Player;
     cursor:Phaser.CursorKeys;
     proyectiles:Phaser.Group;
     proyectilesEnemigos:Phaser.Group;
@@ -73,31 +81,36 @@ class mainState extends Phaser.State {
         this.createProyectilesEnemigos();
         this.createMonsters();
         this.createExplosions();
+        this.createTexts();
+    }
+
+    createTexts(){
+        var width = this.scale.bounds.width;
+        var height = this.scale.bounds.height;
+
+        // Texto puntuación
+
+        this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score,
+            {font: "30px Arial", fill: "#ffffff"});
+
+        this.game.scoreText.fixedToCamera = true;
+
+        // Texto de las vidas
+
+        this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ',
+            {font: "30px Arial", fill: "#ffffff"});
+
+        this.game.scoreText.fixedToCamera = true;
+
     }
 
     createJugador() {
-        // Coordenadas y posicion de la barra
-        this.game.jugador = this.add.sprite(this.world.centerX, 0, 'nave');
-        this.game.jugador.x = this.world.centerX;
-        this.game.jugador.y = this.world.height - this.game.jugador.height - 5;
-        this.game.jugador.anchor.setTo(0.5, 0.5);
 
         // Para el movimiento de la barra con las teclas
         this.game.cursor = this.input.keyboard.createCursorKeys();
 
-        // Activamos la fisica y la hacemos rebotar con los bordes
-        this.physics.enable(this.game.jugador);
-        this.game.jugador.body.collideWorldBounds = true;
-
-        // Fuerza de rozamiento para que la barra frene
-        this.game.jugador.body.drag.setTo(this.game.FUERZA_ROZAMIENTO, this.game.FUERZA_ROZAMIENTO); // x, y
-
-        // Le damos una velocidad maxima
-        this.game.jugador.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
-        this.game.jugador.body.bounce.setTo(0);  // Que no rebote
-        this.game.jugador.body.immovable = true;
-
-        this.game.jugador.health = 1;
+        var jugador = new Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'nave', 0);
+        this.game.jugador = this.add.existing(jugador);
     }
 
     createProyectiles() {
@@ -125,7 +138,6 @@ class mainState extends Phaser.State {
         this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
         this.game.proyectilesEnemigos.setAll('scale.y', 0.5);
         this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
-        this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
 
     private createExplosions() {
@@ -146,21 +158,23 @@ class mainState extends Phaser.State {
         this.game.enemigos = this.add.group();
         this.game.enemigos.enableBody = true;
 
-        // Posiciones en las que generaremos los ladrillos
+        // Posiciones en las que generaremos los enemigos
         var monstruosPorLinea = 20;
         var numeroFilas = 4;
+        var margenAltura = 70;
 
-        // Tamanyo de los ladrillos
-        var anchuraMonstruo = 64;
-        var alturoaMonstruo = 32;
+        // Tamanyo de los enemigos
+        var anchuraMonstruo = 45;
+        var alturaMonstruo = 30;
 
         // For para llenar array de coordeandas
         for (var posFila = 0; posFila < numeroFilas; posFila++) {
+
             for (var posColumna = 0; posColumna < monstruosPorLinea; posColumna++) {
 
                 // Coordenadas en las que mostraremos el ladrillo
                 var x = anchuraMonstruo * posColumna;
-                var y = posFila * (alturoaMonstruo + 1);
+                var y = margenAltura + posFila * (alturaMonstruo + 1);
 
                 // instanciamos el Sprite
                 var enemigo = new Enemigo(this.game, x, y, 'enemigo1', 0);
@@ -222,19 +236,28 @@ class mainState extends Phaser.State {
     }
 
     matarMonstruos(enemigo:Enemigo, proyectil:Phaser.Sprite) {
-        this.explosion(proyectil.x, proyectil.y);
-        enemigo.health = 0;
+
+        // Matamos los sprites
         enemigo.kill();
         proyectil.kill();
+
+        // Ejecutamos la animación de explosion
+        this.explosion(proyectil.x, proyectil.y);
+
+        // Actualizamos la puntuación
+        this.game.score += 10;
+        this.game.scoreText.setText("Score: " + this.game.score);
     }
 
     danyarJugador(proyectil:Phaser.Sprite, jugador:Phaser.Sprite) {
-        this.explosion(proyectil.x, proyectil.y);
-        jugador.health -= 1;
+
+        jugador.damage(1);
 
         if (jugador.health == 0) {
             jugador.kill();
         }
+
+        this.explosion(proyectil.x, proyectil.y);
     }
 
     update():void {
@@ -242,7 +265,7 @@ class mainState extends Phaser.State {
 
         // Colisions
         this.physics.arcade.overlap(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
-        this.physics.arcade.collide(this.game.proyectilesEnemigos, this.game.jugador, this.danyarJugador, null, this);
+        this.physics.arcade.overlap(this.game.proyectilesEnemigos, this.game.jugador, this.danyarJugador, null, this);
 
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
@@ -252,9 +275,11 @@ class mainState extends Phaser.State {
         // Con este if hacemos que el movimiento sea brusco y no lineal, similar al Space Invaders original
         if (this.game.time.now > this.game.nextMovement) {
 
+            // Movimientos
             this.game.enemigos.x = this.game.enemigos.x + this.game.velocidad;
             this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
 
+            // Comprobamos que no nos hayamos salido de la pantalla
             if ((this.game.enemigos.x < 0) || (this.game.enemigos.x + this.game.enemigos.width > this.game.world.width)) {
                 this.game.enemigos.y += 50;
                 this.game.velocidad *= -1;
@@ -263,21 +288,58 @@ class mainState extends Phaser.State {
                     this.game.enemigos.x = 10;
                 }
 
-                if (this.game.enemigos.x > this.game.world.width) {
+                if (this.game.enemigos.x + this.game.enemigos.width > this.game.world.width) {
                     this.game.enemigos.x = this.game.world.width - this.game.enemigos.width - 10;
                 }
             }
         }
 
-        // Movimientos en el eje X
+        // Movimientos en el eje X del jugador
         if (this.game.cursor.left.isDown) {
             this.game.jugador.body.acceleration.x = -this.game.ACELERACION;
         } else if (this.game.cursor.right.isDown) {
             this.game.jugador.body.acceleration.x = this.game.ACELERACION;
         }
 
+        // Controla los movimientos del raton
         this.game.jugador.position.x = this.game.input.x;
     }
+}
+
+class Player extends Phaser.Sprite {
+
+    // Instanciamos el juego
+    game:SimpleGame;
+
+    // Variables
+    id:string;              // ID con la que identificaremos al jugador
+
+    // Constructores
+    constructor(id:string, numeroVidas:number, game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number)  {
+        super(game, x, y, key, frame);
+
+        this.id = id;
+        this.health = numeroVidas;
+        this.x = this.game.world.centerX;
+        this.y = this.game.world.height - this.height - 5;
+        this.anchor.setTo(0.5, 0.5);
+
+        // Activamos la fisica y la hacemos rebotar con los bordes
+        this.game.physics.enable(this, Phaser.Physics.ARCADE);
+        this.body.collideWorldBounds = true;
+
+        // Fuerza de rozamiento para que la barra frene
+        this.body.drag.setTo(this.game.FUERZA_ROZAMIENTO, this.game.FUERZA_ROZAMIENTO); // x, y
+
+        // Le damos una velocidad maxima
+        this.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
+        this.body.bounce.setTo(0);  // Que no rebote
+        this.body.immovable = true;
+
+
+    }
+
+
 }
 
 class Enemigo extends Phaser.Sprite {
@@ -302,23 +364,24 @@ class Enemigo extends Phaser.Sprite {
         super.update();
 
         if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20) && this.health > 0) {
-            this.fireEnemigos(this);
+            this.fireEnemigos();
         }
     }
 
     // Metodos
 
-    fireEnemigos(enemigo:Enemigo):void {
+    fireEnemigos():void {
 
         var randomValue = this.game.rnd.integerInRange(1, 100);
 
-        if (this.game.time.now > this.nextFire && randomValue == 5) {
+        if (this.game.time.now > this.nextFire && randomValue == 5 && this.alive) {
 
             var proyectilEnemigo = this.game.proyectilesEnemigos.getFirstDead();
 
             if (proyectilEnemigo) {
 
-                proyectilEnemigo.reset(enemigo.x, enemigo.y);
+                proyectilEnemigo.reset(this.x, this.y);
+                this.game.livesText.setText("Coordenada x: " + this.x + ", Coordenada y:" + this.y + "| Vida jugador:" + this.game.jugador.health);
 
                 proyectilEnemigo.body.velocity.setTo(0, 500);
 
