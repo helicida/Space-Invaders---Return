@@ -17,7 +17,6 @@ var MyGame;
         function BootState() {
             _super.apply(this, arguments);
         }
-
         BootState.prototype.preload = function () {
             _super.prototype.preload.call(this);
             this.load.image('progressBar', 'assets/progressBar.png');
