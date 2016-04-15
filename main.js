@@ -28,7 +28,7 @@ var SimpleGame = (function (_super) {
         this.state.start('main');
     }
     return SimpleGame;
-}(Phaser.Game));
+})(Phaser.Game);
 var mainState = (function (_super) {
     __extends(mainState, _super);
     function mainState() {
@@ -95,7 +95,6 @@ var mainState = (function (_super) {
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
     };
-    ;
     mainState.prototype.createProyectilesEnemigos = function () {
         this.game.proyectilesEnemigos = this.add.group();
         this.game.proyectilesEnemigos.enableBody = true;
@@ -107,7 +106,6 @@ var mainState = (function (_super) {
         this.game.proyectilesEnemigos.setAll('scale.y', 0.5);
         this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
     };
-    ;
     mainState.prototype.createExplosions = function () {
         this.game.explosiones = this.add.group();
         this.game.explosiones.createMultiple(20, 'explosion');
@@ -117,7 +115,6 @@ var mainState = (function (_super) {
             explosion.loadTexture('explosion');
         }, this);
     };
-    ;
     mainState.prototype.createMonsters = function () {
         // Anyadimos el recolectable a un grupo
         this.game.marcianos1 = this.add.group();
@@ -205,6 +202,7 @@ var mainState = (function (_super) {
         // Matamos los sprites
         satelite.kill();
         proyectil.kill();
+        this.game.sonidoPlatillo.stop();
         // Ejecutamos la animación de explosion
         this.explosion(proyectil.x, proyectil.y);
         // Actualizamos la puntuación
@@ -258,7 +256,7 @@ var mainState = (function (_super) {
         this.game.jugador.position.x = this.game.input.x;
     };
     return mainState;
-}(Phaser.State));
+})(Phaser.State);
 var Player = (function (_super) {
     __extends(Player, _super);
     // Constructores
@@ -280,7 +278,7 @@ var Player = (function (_super) {
         this.body.immovable = true;
     }
     return Player;
-}(Phaser.Sprite));
+})(Phaser.Sprite);
 var Enemigo = (function (_super) {
     __extends(Enemigo, _super);
     // Constructor de los enemigos
@@ -292,7 +290,7 @@ var Enemigo = (function (_super) {
         this.body.enableBody = true;
     }
     return Enemigo;
-}(Phaser.Sprite));
+})(Phaser.Sprite);
 var Marciano1 = (function (_super) {
     __extends(Marciano1, _super);
     // Constructor de los enemigos
@@ -327,7 +325,7 @@ var Marciano1 = (function (_super) {
         }
     };
     return Marciano1;
-}(Enemigo));
+})(Enemigo);
 var Satelite = (function (_super) {
     __extends(Satelite, _super);
     // Constructor de los enemigos
@@ -341,10 +339,11 @@ var Satelite = (function (_super) {
         // Rebote
         this.body.velocity.x = 400;
         this.body.bounce.setTo(1);
-        this.game.sonidoMovimeintoEnemigo.play();
+        this.game.sonidoPlatillo.loop = true;
+        this.game.sonidoPlatillo.play();
     }
     return Satelite;
-}(Enemigo));
+})(Enemigo);
 var EnemigosFactory = (function () {
     // Constructores
     function EnemigosFactory(game) {
@@ -363,7 +362,7 @@ var EnemigosFactory = (function () {
         }
     };
     return EnemigosFactory;
-}());
+})();
 window.onload = function () {
     new SimpleGame();
 };

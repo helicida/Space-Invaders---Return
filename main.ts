@@ -299,6 +299,8 @@ class mainState extends Phaser.State {
         satelite.kill();
         proyectil.kill();
 
+        this.game.sonidoPlatillo.stop();
+
         // Ejecutamos la animación de explosion
         this.explosion(proyectil.x, proyectil.y);
 
@@ -487,7 +489,8 @@ class Satelite extends Enemigo {
         this.body.velocity.x = 400;
         this.body.bounce.setTo(1);
 
-        this.game.sonidoMovimeintoEnemigo.play();
+        this.game.sonidoPlatillo.loop = true;
+        this.game.sonidoPlatillo.play();
 
     }
 }
