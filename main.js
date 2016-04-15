@@ -34,6 +34,7 @@ var MyGame;
              this.state.add("play", PlayState);*/
             this.state.start('main');
         }
+
         return SimpleGame;
     })(Phaser.Game);
     MyGame.SimpleGame = SimpleGame;
@@ -42,6 +43,7 @@ var MyGame;
         function mainState() {
             _super.apply(this, arguments);
         }
+
         mainState.prototype.preload = function () {
             _super.prototype.preload.call(this);
             // Importamos las imagenes
@@ -292,6 +294,7 @@ var MyGame;
             this.body.bounce.setTo(0); // Que no rebote
             this.body.immovable = true;
         }
+
         return Player;
     })(Phaser.Sprite);
     var Proteccion = (function (_super) {
@@ -304,6 +307,7 @@ var MyGame;
                 proteccion.health = 4;
             }, this);
         }
+
         // Update
         Proteccion.prototype.update = function () {
             _super.prototype.update.call(this);
@@ -334,6 +338,7 @@ var MyGame;
             this.game.physics.enable(this);
             this.body.enableBody = true;
         }
+
         return Enemigo;
     })(Phaser.Sprite);
     var Marciano1 = (function (_super) {
@@ -349,6 +354,7 @@ var MyGame;
             this.game.physics.enable(this);
             this.body.enableBody = true;
         }
+
         Marciano1.prototype.update = function () {
             _super.prototype.update.call(this);
             if ((this.game.jugador.body.x - 30 < this.body.x) && (this.body.x < this.game.jugador.body.x + 30)) {
@@ -387,6 +393,7 @@ var MyGame;
             this.game.sonidoPlatillo.loop = true;
             this.game.sonidoPlatillo.play();
         }
+
         return Satelite;
     })(Enemigo);
     var EnemigosFactory = (function () {
@@ -394,6 +401,7 @@ var MyGame;
         function EnemigosFactory(game) {
             this.game = game;
         }
+
         // Con este metodo
         EnemigosFactory.prototype.generarEnemigo = function (key, x, y) {
             if (key == 'marciano1') {
