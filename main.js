@@ -44,9 +44,19 @@ var mainState = (function (_super) {
         this.load.image('satelite', 'assets/png/satelite.png');
         this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
         this.load.image('explosion', 'assets/png/explosion.png');
+        // Cargamos el audio
+        this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
+        this.load.audio('playerShootSound', 'sounds/playerShoot.wav');
+        this.load.audio('enemyMove', 'sounds/enemyMove.wav');
+        this.load.audio('sateliteMove', 'sounds/ufo_fly.wav');
     };
     mainState.prototype.create = function () {
         _super.prototype.create.call(this);
+        // Asignamos el audio a sus variables
+        this.game.sonidoEnemigoMuerto = this.game.add.audio('killedEnemySound');
+        this.game.sonidoDisparoJugador = this.game.add.audio('playerShootSound');
+        this.game.sonidoMovimeintoEnemigo = this.game.add.audio('enemyMove');
+        this.game.sonidoPlatillo = this.game.add.audio('sateliteMove');
         // Background
         this.game.stage.backgroundColor = "#0000";
         this.physics.arcade.checkCollision.down = false;
@@ -153,6 +163,7 @@ var mainState = (function (_super) {
             if (bullet) {
                 bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
                 bullet.body.velocity.setTo(0, -500);
+                this.game.sonidoDisparoJugador.play();
                 this.game.nextFire = this.time.now + this.game.CADENCIA_DISPARO;
             }
         }
@@ -166,6 +177,8 @@ var mainState = (function (_super) {
             explosion.alpha = 0.6;
             explosion.angle = this.rnd.angle();
             explosion.scale.setTo(this.rnd.realInRange(0.5, 0.75));
+            // reproducimos el sonido
+            this.game.sonidoEnemigoMuerto.play();
             // Hacemos que varíe su tamaño para dar la sensación de que el humo se disipa
             this.add.tween(explosion.scale).to({
                 x: 0, y: 0
@@ -178,7 +191,7 @@ var mainState = (function (_super) {
             tween.start();
         }
     };
-    mainState.prototype.matarMonstruos = function (enemigo, proyectil) {
+    mainState.prototype.matarMarcianos = function (enemigo, proyectil) {
         // Matamos los sprites
         enemigo.kill();
         proyectil.kill();
@@ -186,6 +199,16 @@ var mainState = (function (_super) {
         this.explosion(proyectil.x, proyectil.y);
         // Actualizamos la puntuación
         this.game.score += 10;
+        this.game.scoreText.setText("Score: " + this.game.score);
+    };
+    mainState.prototype.matarSatelites = function (satelite, proyectil) {
+        // Matamos los sprites
+        satelite.kill();
+        proyectil.kill();
+        // Ejecutamos la animación de explosion
+        this.explosion(proyectil.x, proyectil.y);
+        // Actualizamos la puntuación
+        this.game.score += 100;
         this.game.scoreText.setText("Score: " + this.game.score);
     };
     mainState.prototype.danyarJugador = function (proyectil, jugador) {
@@ -198,7 +221,8 @@ var mainState = (function (_super) {
     mainState.prototype.update = function () {
         _super.prototype.update.call(this);
         // Colisions
-        this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
+        this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
         this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
@@ -209,6 +233,8 @@ var mainState = (function (_super) {
             // Movimientos
             this.game.marcianos1.x = this.game.marcianos1.x + this.game.velocidad;
             this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
+            // Reproducimos el sonido del movimiento
+            this.game.sonidoMovimeintoEnemigo.play();
             // Comprobamos que no nos hayamos salido de la pantalla
             if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
                 this.game.marcianos1.y += 50;
@@ -315,6 +341,7 @@ var Satelite = (function (_super) {
         // Rebote
         this.body.velocity.x = 400;
         this.body.bounce.setTo(1);
+        this.game.sonidoMovimeintoEnemigo.play();
     }
     return Satelite;
 }(Enemigo));

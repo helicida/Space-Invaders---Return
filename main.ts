@@ -9,6 +9,13 @@ class SimpleGame extends Phaser.Game {
     // Puntuacion
     score:number = 0;
 
+    // Sonidos
+    sonidoEnemigoMuerto;
+    sonidoDisparoJugador;
+    sonidoMovimeintoEnemigo;
+    sonidoPlatillo;
+
+
     // Textos que mostramos en pantalla
     scoreText:Phaser.Text;
     livesText:Phaser.Text;
@@ -69,10 +76,22 @@ class mainState extends Phaser.State {
         this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
 
         this.load.image('explosion', 'assets/png/explosion.png');
+
+        // Cargamos el audio
+        this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
+        this.load.audio('playerShootSound', 'sounds/playerShoot.wav');
+        this.load.audio('enemyMove', 'sounds/enemyMove.wav');
+        this.load.audio('sateliteMove', 'sounds/ufo_fly.wav');
     }
 
     create():void {
         super.create();
+
+        // Asignamos el audio a sus variables
+        this.game.sonidoEnemigoMuerto =  this.game.add.audio('killedEnemySound');
+        this.game.sonidoDisparoJugador =  this.game.add.audio('playerShootSound');
+        this.game.sonidoMovimeintoEnemigo =  this.game.add.audio('enemyMove');
+        this.game.sonidoPlatillo =  this.game.add.audio('sateliteMove');
 
         // Background
         this.game.stage.backgroundColor = "#0000";
@@ -218,6 +237,7 @@ class mainState extends Phaser.State {
                 bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
 
                 bullet.body.velocity.setTo(0, -500);
+                this.game.sonidoDisparoJugador.play();
 
                 this.game.nextFire = this.time.now + this.game.CADENCIA_DISPARO;
             }
@@ -240,6 +260,9 @@ class mainState extends Phaser.State {
             explosion.angle = this.rnd.angle();
             explosion.scale.setTo(this.rnd.realInRange(0.5, 0.75));
 
+            // reproducimos el sonido
+            this.game.sonidoEnemigoMuerto.play();
+
             // Hacemos que varíe su tamaño para dar la sensación de que el humo se disipa
             this.add.tween(explosion.scale).to({
                 x: 0, y: 0
@@ -256,7 +279,7 @@ class mainState extends Phaser.State {
         }
     }
 
-    matarMonstruos(enemigo:Enemigo, proyectil:Phaser.Sprite) {
+    matarMarcianos(enemigo:Enemigo, proyectil:Phaser.Sprite) {
 
         // Matamos los sprites
         enemigo.kill();
@@ -267,6 +290,20 @@ class mainState extends Phaser.State {
 
         // Actualizamos la puntuación
         this.game.score += 10;
+        this.game.scoreText.setText("Score: " + this.game.score);
+    }
+
+    matarSatelites(satelite:Satelite, proyectil:Phaser.Sprite) {
+
+        // Matamos los sprites
+        satelite.kill();
+        proyectil.kill();
+
+        // Ejecutamos la animación de explosion
+        this.explosion(proyectil.x, proyectil.y);
+
+        // Actualizamos la puntuación
+        this.game.score += 100;
         this.game.scoreText.setText("Score: " + this.game.score);
     }
 
@@ -285,8 +322,10 @@ class mainState extends Phaser.State {
         super.update();
 
         // Colisions
-        this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
+        this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
         this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
+
 
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
@@ -299,6 +338,9 @@ class mainState extends Phaser.State {
             // Movimientos
             this.game.marcianos1.x = this.game.marcianos1.x + this.game.velocidad;
             this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
+
+            // Reproducimos el sonido del movimiento
+            this.game.sonidoMovimeintoEnemigo.play();
 
             // Comprobamos que no nos hayamos salido de la pantalla
             if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
@@ -333,7 +375,7 @@ class Player extends Phaser.Sprite {
     game:SimpleGame;
 
     // Variables
-    id:string;    // ID con la que identificaremos al jugador
+    id:string;   // ID con la que identificaremos al jugador
 
     // Constructores
     constructor(id:string, numeroVidas:number, game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number)  {
@@ -444,6 +486,8 @@ class Satelite extends Enemigo {
         // Rebote
         this.body.velocity.x = 400;
         this.body.bounce.setTo(1);
+
+        this.game.sonidoMovimeintoEnemigo.play();
 
     }
 }
