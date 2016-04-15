@@ -48,7 +48,7 @@ class SimpleGame extends Phaser.Game {
     VELOCIDAD_MAXIMA = 450;  // pixels/second
     FUERZA_ROZAMIENTO = 100; // Aceleración negativa
     ACELERACION = 700;       // aceleración
-    CADENCIA_DISPARO = 200;  // Tiempo entre disparo y disparo
+    CADENCIA_DISPARO = 500;  // Tiempo entre disparo y disparo
     MONSTER_HEALTH = 1;      // golpes que aguantan los monstruos
 
     constructor() {
@@ -68,7 +68,7 @@ class mainState extends Phaser.State {
 
         // Importamos las imagenes
         this.load.image('nave', 'assets/png/spaceship.png');
-        this.load.image('proyectiles', 'assets/png/ballBlue.png');
+        this.load.image('proyectiles', 'assets/png/enemyShoot.png');
 
         // Enemigos
         this.load.image('marciano1', 'assets/png/enemigo1.png');
@@ -136,7 +136,7 @@ class mainState extends Phaser.State {
         this.game.proyectiles = this.add.group();
         this.game.proyectiles.enableBody = true;
         this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-        this.game.proyectiles.createMultiple(20, 'proyectiles');
+        this.game.proyectiles.createMultiple(1000, 'proyectiles');
 
         this.game.proyectiles.setAll('anchor.x', 0.5);
         this.game.proyectiles.setAll('anchor.y', 0.5);
@@ -158,6 +158,7 @@ class mainState extends Phaser.State {
         this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
         this.game.proyectilesEnemigos.setAll('scale.y', 0.5);
         this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
+        this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
 
     private createExplosions() {
@@ -309,7 +310,7 @@ class mainState extends Phaser.State {
         this.game.scoreText.setText("Score: " + this.game.score);
     }
 
-    danyarJugador(proyectil:Phaser.Sprite, jugador:Player) {
+    danyarJugador(jugador:Player, proyectil:Phaser.Sprite) {
 
         jugador.damage(1);
 
@@ -318,6 +319,7 @@ class mainState extends Phaser.State {
         }
 
         this.explosion(proyectil.x, proyectil.y);
+        proyectil.kill();
     }
 
     update():void {
@@ -327,7 +329,6 @@ class mainState extends Phaser.State {
         this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
         this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
         this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
-
 
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
@@ -345,7 +346,8 @@ class mainState extends Phaser.State {
             this.game.sonidoMovimeintoEnemigo.play();
 
             // Comprobamos que no nos hayamos salido de la pantalla
-            if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
+            if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x > this.game.world.width) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
+
                 this.game.marcianos1.y += 50;
                 this.game.velocidad *= -1;
 
@@ -403,6 +405,18 @@ class Player extends Phaser.Sprite {
     }
 }
 
+class Proteccion extends Phaser.Sprite {
+
+    // Instanciamos el juego
+    game:SimpleGame;
+
+    // Variables
+    id:string;   // ID con la que identificaremos la protección
+
+
+}
+
+
 abstract class Enemigo extends Phaser.Sprite {
 
     // Games
@@ -430,7 +444,7 @@ class Marciano1 extends Enemigo {
 
     // Constructor de los enemigos
     constructor(game:SimpleGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number)  {
-        super(game, x, y,key, 0);
+        super(game, x, y, key, 0);
 
         // Ajustmaos el sprite
         this.game = game;
@@ -441,14 +455,14 @@ class Marciano1 extends Enemigo {
     update():void {
         super.update();
 
-        if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20)) {
-            this.fireEnemigos();
+        if ((this.game.jugador.body.x - 30 < this.body.x) && (this.body.x < this.game.jugador.body.x + 30)) {
+            this.fireEnemigos(this.body.x, this.body.y);
         }
     }
 
     // Metodos
 
-    fireEnemigos():void {
+    fireEnemigos(x:number, y:number):void {
 
         // Al azar para que no disparen todos los monstruos
         var randomValue = this.game.rnd.integerInRange(1, 100);
@@ -459,8 +473,8 @@ class Marciano1 extends Enemigo {
 
             if (proyectilEnemigo) {
 
-                proyectilEnemigo.reset(this.x, this.y + this.height);
-                this.game.livesText.setText("Coordenada x: " + this.x + ", Coordenada y:" + this.y + "| Vida jugador:" + this.game.jugador.health);
+                proyectilEnemigo.reset(x, y + this.height);
+                this.game.livesText.setText("Coordenada x: " + this.body.x + ", Coordenada y:" + this.body.y + "| Vida jugador:" + this.game.jugador.health);
 
                 proyectilEnemigo.body.velocity.setTo(0, 500);
 

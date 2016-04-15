@@ -22,7 +22,7 @@ var SimpleGame = (function (_super) {
         this.VELOCIDAD_MAXIMA = 450; // pixels/second
         this.FUERZA_ROZAMIENTO = 100; // Aceleración negativa
         this.ACELERACION = 700; // aceleración
-        this.CADENCIA_DISPARO = 200; // Tiempo entre disparo y disparo
+        this.CADENCIA_DISPARO = 500; // Tiempo entre disparo y disparo
         this.MONSTER_HEALTH = 1; // golpes que aguantan los monstruos
         this.state.add('main', mainState);
         this.state.start('main');
@@ -38,7 +38,7 @@ var mainState = (function (_super) {
         _super.prototype.preload.call(this);
         // Importamos las imagenes
         this.load.image('nave', 'assets/png/spaceship.png');
-        this.load.image('proyectiles', 'assets/png/ballBlue.png');
+        this.load.image('proyectiles', 'assets/png/enemyShoot.png');
         // Enemigos
         this.load.image('marciano1', 'assets/png/enemigo1.png');
         this.load.image('satelite', 'assets/png/satelite.png');
@@ -87,7 +87,7 @@ var mainState = (function (_super) {
         this.game.proyectiles = this.add.group();
         this.game.proyectiles.enableBody = true;
         this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-        this.game.proyectiles.createMultiple(20, 'proyectiles');
+        this.game.proyectiles.createMultiple(1000, 'proyectiles');
         this.game.proyectiles.setAll('anchor.x', 0.5);
         this.game.proyectiles.setAll('anchor.y', 0.5);
         this.game.proyectiles.setAll('scale.x', 0.5);
@@ -105,6 +105,7 @@ var mainState = (function (_super) {
         this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
         this.game.proyectilesEnemigos.setAll('scale.y', 0.5);
         this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
+        this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
     mainState.prototype.createExplosions = function () {
         this.game.explosiones = this.add.group();
@@ -209,12 +210,13 @@ var mainState = (function (_super) {
         this.game.score += 100;
         this.game.scoreText.setText("Score: " + this.game.score);
     };
-    mainState.prototype.danyarJugador = function (proyectil, jugador) {
+    mainState.prototype.danyarJugador = function (jugador, proyectil) {
         jugador.damage(1);
         if (jugador.health == 0) {
             jugador.kill();
         }
         this.explosion(proyectil.x, proyectil.y);
+        proyectil.kill();
     };
     mainState.prototype.update = function () {
         _super.prototype.update.call(this);
@@ -234,7 +236,7 @@ var mainState = (function (_super) {
             // Reproducimos el sonido del movimiento
             this.game.sonidoMovimeintoEnemigo.play();
             // Comprobamos que no nos hayamos salido de la pantalla
-            if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
+            if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x > this.game.world.width) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
                 this.game.marcianos1.y += 50;
                 this.game.velocidad *= -1;
                 if (this.game.marcianos1.x < 0) {
@@ -279,6 +281,14 @@ var Player = (function (_super) {
     }
     return Player;
 })(Phaser.Sprite);
+var Proteccion = (function (_super) {
+    __extends(Proteccion, _super);
+    function Proteccion() {
+        _super.apply(this, arguments);
+    }
+
+    return Proteccion;
+})(Phaser.Sprite);
 var Enemigo = (function (_super) {
     __extends(Enemigo, _super);
     // Constructor de los enemigos
@@ -306,19 +316,19 @@ var Marciano1 = (function (_super) {
     }
     Marciano1.prototype.update = function () {
         _super.prototype.update.call(this);
-        if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20)) {
-            this.fireEnemigos();
+        if ((this.game.jugador.body.x - 30 < this.body.x) && (this.body.x < this.game.jugador.body.x + 30)) {
+            this.fireEnemigos(this.body.x, this.body.y);
         }
     };
     // Metodos
-    Marciano1.prototype.fireEnemigos = function () {
+    Marciano1.prototype.fireEnemigos = function (x, y) {
         // Al azar para que no disparen todos los monstruos
         var randomValue = this.game.rnd.integerInRange(1, 100);
         if (this.game.time.now > this.nextFire && randomValue == 5 && this.alive) {
             var proyectilEnemigo = this.game.proyectilesEnemigos.getFirstDead();
             if (proyectilEnemigo) {
-                proyectilEnemigo.reset(this.x, this.y + this.height);
-                this.game.livesText.setText("Coordenada x: " + this.x + ", Coordenada y:" + this.y + "| Vida jugador:" + this.game.jugador.health);
+                proyectilEnemigo.reset(x, y + this.height);
+                this.game.livesText.setText("Coordenada x: " + this.body.x + ", Coordenada y:" + this.body.y + "| Vida jugador:" + this.game.jugador.health);
                 proyectilEnemigo.body.velocity.setTo(0, 500);
                 this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
             }
