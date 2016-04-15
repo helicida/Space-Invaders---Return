@@ -18,7 +18,8 @@ class SimpleGame extends Phaser.Game {
     tilemap:Phaser.Tilemap;
 
     // Grupos
-    enemigos:Phaser.Group;
+    marcianos1:Phaser.Group;
+    sateltites:Phaser.Group;
 
     // Variables
     velocidad = 10;
@@ -60,11 +61,13 @@ class mainState extends Phaser.State {
 
         // Importamos las imagenes
         this.load.image('nave', 'assets/png/spaceship.png');
-        this.load.image('pelota', 'assets/png/ballGrey.png');
         this.load.image('proyectiles', 'assets/png/ballBlue.png');
+
+        // Enemigos
+        this.load.image('marciano1', 'assets/png/enemigo1.png');
+        this.load.image('satelite', 'assets/png/satelite.png');
         this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
-        this.load.image('ladrilloVerde', 'assets/png/element_green_rectangle.png');
-        this.load.image('enemigo1', 'assets/png/enemigo1.png');
+
         this.load.image('explosion', 'assets/png/explosion.png');
     }
 
@@ -85,18 +88,16 @@ class mainState extends Phaser.State {
     }
 
     createTexts(){
+
         var width = this.scale.bounds.width;
-        var height = this.scale.bounds.height;
 
         // Texto puntuación
-
         this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score,
             {font: "30px Arial", fill: "#ffffff"});
 
         this.game.scoreText.fixedToCamera = true;
 
         // Texto de las vidas
-
         this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ',
             {font: "30px Arial", fill: "#ffffff"});
 
@@ -105,7 +106,6 @@ class mainState extends Phaser.State {
     }
 
     createJugador() {
-
         // Para el movimiento de la barra con las teclas
         this.game.cursor = this.input.keyboard.createCursorKeys();
 
@@ -128,6 +128,7 @@ class mainState extends Phaser.State {
     };
 
     createProyectilesEnemigos() {
+
         this.game.proyectilesEnemigos = this.add.group();
         this.game.proyectilesEnemigos.enableBody = true;
         this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
@@ -141,6 +142,7 @@ class mainState extends Phaser.State {
     };
 
     private createExplosions() {
+
         this.game.explosiones = this.add.group();
         this.game.explosiones.createMultiple(20, 'explosion');
 
@@ -155,8 +157,8 @@ class mainState extends Phaser.State {
     private createMonsters() {
 
         // Anyadimos el recolectable a un grupo
-        this.game.enemigos = this.add.group();
-        this.game.enemigos.enableBody = true;
+        this.game.marcianos1 = this.add.group();
+        this.game.marcianos1.enableBody = true;
 
         // Posiciones en las que generaremos los enemigos
         var monstruosPorLinea = 20;
@@ -167,7 +169,26 @@ class mainState extends Phaser.State {
         var anchuraMonstruo = 45;
         var alturaMonstruo = 30;
 
-        // For para llenar array de coordeandas
+        // Instanciamos la clase factory que es con la que generaremos los enemigos
+        var factory = new EnemigosFactory(this.game);
+        
+        //---------------------------
+        //GENERAMOS EL SATELITE
+        //---------------------------
+
+        // Anyadimos el recolectable a un grupo
+        this.game.sateltites = this.add.group();
+        this.game.sateltites.enableBody = true;
+
+        var satelite = factory.generarEnemigo('satelite', 20, 20);
+
+        // Anyadimos el enemigo a su grupo
+        this.add.existing(satelite);
+        this.game.sateltites.add(satelite);
+
+        //---------------------------
+        // GENERAMOS LOS MARCIANOS
+        //---------------------------
         for (var posFila = 0; posFila < numeroFilas; posFila++) {
 
             for (var posColumna = 0; posColumna < monstruosPorLinea; posColumna++) {
@@ -176,12 +197,12 @@ class mainState extends Phaser.State {
                 var x = anchuraMonstruo * posColumna;
                 var y = margenAltura + posFila * (alturaMonstruo + 1);
 
-                // instanciamos el Sprite
-                var enemigo = new Enemigo(this.game, x, y, 'enemigo1', 0);
+                // Generamos un tipo de enemigos y le pasamos sus coordenadas
+                var marcianos1 = factory.generarEnemigo('marciano1', x, y);
 
-                // mostramos el Sprite por pantalla
-                this.add.existing(enemigo);
-                this.game.enemigos.add(enemigo);
+                // Anyadimos los enemigos a su grupo
+                this.add.existing(marcianos1);
+                this.game.marcianos1.add(marcianos1);
             }
         }
     }
@@ -249,7 +270,7 @@ class mainState extends Phaser.State {
         this.game.scoreText.setText("Score: " + this.game.score);
     }
 
-    danyarJugador(proyectil:Phaser.Sprite, jugador:Phaser.Sprite) {
+    danyarJugador(proyectil:Phaser.Sprite, jugador:Player) {
 
         jugador.damage(1);
 
@@ -264,8 +285,8 @@ class mainState extends Phaser.State {
         super.update();
 
         // Colisions
-        this.physics.arcade.overlap(this.game.enemigos, this.game.proyectiles, this.matarMonstruos, null, this);
-        this.physics.arcade.overlap(this.game.proyectilesEnemigos, this.game.jugador, this.danyarJugador, null, this);
+        this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMonstruos, null, this);
+        this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
 
         // Disparar al hacer click
         if (this.input.activePointer.isDown) {
@@ -276,20 +297,20 @@ class mainState extends Phaser.State {
         if (this.game.time.now > this.game.nextMovement) {
 
             // Movimientos
-            this.game.enemigos.x = this.game.enemigos.x + this.game.velocidad;
+            this.game.marcianos1.x = this.game.marcianos1.x + this.game.velocidad;
             this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
 
             // Comprobamos que no nos hayamos salido de la pantalla
-            if ((this.game.enemigos.x < 0) || (this.game.enemigos.x + this.game.enemigos.width > this.game.world.width)) {
-                this.game.enemigos.y += 50;
+            if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
+                this.game.marcianos1.y += 50;
                 this.game.velocidad *= -1;
 
-                if (this.game.enemigos.x < 0) {
-                    this.game.enemigos.x = 10;
+                if (this.game.marcianos1.x < 0) {
+                    this.game.marcianos1.x = 10;
                 }
 
-                if (this.game.enemigos.x + this.game.enemigos.width > this.game.world.width) {
-                    this.game.enemigos.x = this.game.world.width - this.game.enemigos.width - 10;
+                if (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width) {
+                    this.game.marcianos1.x = this.game.world.width - this.game.marcianos1.width - 10;
                 }
             }
         }
@@ -312,7 +333,7 @@ class Player extends Phaser.Sprite {
     game:SimpleGame;
 
     // Variables
-    id:string;              // ID con la que identificaremos al jugador
+    id:string;    // ID con la que identificaremos al jugador
 
     // Constructores
     constructor(id:string, numeroVidas:number, game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number)  {
@@ -335,14 +356,26 @@ class Player extends Phaser.Sprite {
         this.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
         this.body.bounce.setTo(0);  // Que no rebote
         this.body.immovable = true;
-
-
     }
-
-
 }
 
-class Enemigo extends Phaser.Sprite {
+abstract class Enemigo extends Phaser.Sprite {
+
+    // Games
+    game:SimpleGame;
+
+    // Constructor de los enemigos
+    constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
+        super(game, x, y, key, frame);
+
+        // Predeterminadas
+        this.game = game;
+        this.game.physics.enable(this);
+        this.body.enableBody = true;
+    }
+}
+
+class Marciano1 extends Enemigo {
 
     // Games
     game:SimpleGame;
@@ -352,9 +385,10 @@ class Enemigo extends Phaser.Sprite {
     CADENCIA_DISPARO = 1000;
 
     // Constructor de los enemigos
-    constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
-        super(game, x, y, key, frame);
+    constructor(game:SimpleGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number)  {
+        super(game, x, y,key, 0);
 
+        // Ajustmaos el sprite
         this.game = game;
         this.game.physics.enable(this);
         this.body.enableBody = true;
@@ -363,7 +397,7 @@ class Enemigo extends Phaser.Sprite {
     update():void {
         super.update();
 
-        if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20) && this.health > 0) {
+        if ((this.game.jugador.x - 20 < this.x) && (this.x < this.game.jugador.x + 20)) {
             this.fireEnemigos();
         }
     }
@@ -372,6 +406,7 @@ class Enemigo extends Phaser.Sprite {
 
     fireEnemigos():void {
 
+        // Al azar para que no disparen todos los monstruos
         var randomValue = this.game.rnd.integerInRange(1, 100);
 
         if (this.game.time.now > this.nextFire && randomValue == 5 && this.alive) {
@@ -380,13 +415,60 @@ class Enemigo extends Phaser.Sprite {
 
             if (proyectilEnemigo) {
 
-                proyectilEnemigo.reset(this.x, this.y);
+                proyectilEnemigo.reset(this.x, this.y + this.height);
                 this.game.livesText.setText("Coordenada x: " + this.x + ", Coordenada y:" + this.y + "| Vida jugador:" + this.game.jugador.health);
 
                 proyectilEnemigo.body.velocity.setTo(0, 500);
 
                 this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
             }
+        }
+    }
+}
+
+class Satelite extends Enemigo {
+
+    // Games
+    game:SimpleGame;
+
+    // Constructor de los enemigos
+    constructor(game:SimpleGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number)  {
+        super(game, x, y, key, 0);
+
+        // Ajustmaos el sprite
+        this.game = game;
+        this.game.physics.enable(this);
+        this.body.enableBody = true;
+        this.body.collideWorldBounds = true;
+
+        // Rebote
+        this.body.velocity.x = 400;
+        this.body.bounce.setTo(1);
+
+    }
+}
+
+class EnemigosFactory {
+
+    // Instanciamos el juego
+    game:SimpleGame;
+
+    // Constructores
+    constructor(game:SimpleGame) {
+        this.game = game;
+    }
+
+    // Con este metodo
+    generarEnemigo(key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number):Enemigo {
+
+        if (key =='marciano1'){
+            return new Marciano1(this.game, key, x, y);
+        }
+        else if (key =='satelite'){
+            return new Satelite(this.game, key, x, y);
+        }
+        else {
+            return null;
         }
     }
 }
