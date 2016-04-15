@@ -1,11 +1,8 @@
 /// <reference path="phaser/phaser.d.ts"/>
-/// <reference path="BootState.ts"/>
 
 import Point = Phaser.Point;
 
-module MyGame {
-
-    export class SimpleGame extends Phaser.Game {
+class SimpleGame extends Phaser.Game {
 
         game:Phaser.Game;
 
@@ -56,11 +53,6 @@ module MyGame {
             super(1366, 768, Phaser.CANVAS, 'gameDiv');
             this.state.add('main', mainState);
 
-            this.state.add("boot", BootState);
-            //this.state.add("load", LoadState);
-            /*
-             this.state.add("menu", MenuState);
-             this.state.add("play", PlayState);*/
             this.state.start('main');
         }
     }
@@ -587,4 +579,3 @@ module MyGame {
     window.onload = () => {
         new SimpleGame();
     };
-}

@@ -3,12 +3,9 @@
     "module": "commonjs",
     "sourceMap": true,
     "target": "es5",
-    "experimentalDecorators": true,
-    "out": "main.js"
+    "experimentalDecorators": true
   },
   "files": [
-    "main.ts",
-    "BootState.ts",
-    "phaser/phaser.d.ts"
+    "main.ts"
   ]
 }
