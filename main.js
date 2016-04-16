@@ -26,15 +26,13 @@ var SimpleGame = (function (_super) {
         this.state.add('main', mainState);
         this.state.start('main');
     }
-
     return SimpleGame;
-})(Phaser.Game);
+}(Phaser.Game));
 var mainState = (function (_super) {
     __extends(mainState, _super);
     function mainState() {
         _super.apply(this, arguments);
     }
-
     mainState.prototype.preload = function () {
         _super.prototype.preload.call(this);
         // Importamos las imagenes
@@ -71,16 +69,10 @@ var mainState = (function (_super) {
     mainState.prototype.createTexts = function () {
         var width = this.scale.bounds.width;
         // Texto puntuación
-        this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, {
-            font: "30px Arial",
-            fill: "#ffffff"
-        });
+        this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, { font: "30px Arial", fill: "#ffffff" });
         this.game.scoreText.fixedToCamera = true;
         // Texto de las vidas
-        this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ', {
-            font: "30px Arial",
-            fill: "#ffffff"
-        });
+        this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ', { font: "30px Arial", fill: "#ffffff" });
         this.game.scoreText.fixedToCamera = true;
     };
     mainState.prototype.createJugador = function () {
@@ -93,7 +85,7 @@ var mainState = (function (_super) {
         this.game.proyectiles = this.add.group();
         this.game.proyectiles.enableBody = true;
         this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-        this.game.proyectiles.createMultiple(1000, 'proyectiles');
+        this.game.proyectiles.createMultiple(30, 'proyectiles');
         this.game.proyectiles.setAll('anchor.x', 0.5);
         this.game.proyectiles.setAll('anchor.y', 0.5);
         this.game.proyectiles.setAll('scale.x', 0.5);
@@ -101,11 +93,12 @@ var mainState = (function (_super) {
         this.game.proyectiles.setAll('outOfBoundsKill', true);
         this.game.proyectiles.setAll('checkWorldBounds', true);
     };
+    ;
     mainState.prototype.createProyectilesEnemigos = function () {
         this.game.proyectilesEnemigos = this.add.group();
         this.game.proyectilesEnemigos.enableBody = true;
         this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
-        this.game.proyectilesEnemigos.createMultiple(20, 'enemyShoot');
+        this.game.proyectilesEnemigos.createMultiple(15, 'enemyShoot');
         this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
         this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
         this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
@@ -113,6 +106,7 @@ var mainState = (function (_super) {
         this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
         this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
     };
+    ;
     mainState.prototype.createExplosions = function () {
         this.game.explosiones = this.add.group();
         this.game.explosiones.createMultiple(20, 'explosion');
@@ -122,6 +116,7 @@ var mainState = (function (_super) {
             explosion.loadTexture('explosion');
         }, this);
     };
+    ;
     mainState.prototype.createMonsters = function () {
         // Anyadimos el recolectable a un grupo
         this.game.marcianos1 = this.add.group();
@@ -187,7 +182,7 @@ var mainState = (function (_super) {
             this.add.tween(explosion.scale).to({
                 x: 0, y: 0
             }, 500).start();
-            var tween = this.add.tween(explosion).to({alpha: 0}, 500);
+            var tween = this.add.tween(explosion).to({ alpha: 0 }, 500);
             // Una vez terminado matámos la explosión
             tween.onComplete.add(function () {
                 explosion.kill();
@@ -264,7 +259,7 @@ var mainState = (function (_super) {
         this.game.jugador.position.x = this.game.input.x;
     };
     return mainState;
-})(Phaser.State);
+}(Phaser.State));
 var Player = (function (_super) {
     __extends(Player, _super);
     // Constructores
@@ -285,9 +280,8 @@ var Player = (function (_super) {
         this.body.bounce.setTo(0); // Que no rebote
         this.body.immovable = true;
     }
-
     return Player;
-})(Phaser.Sprite);
+}(Phaser.Sprite));
 var Proteccion = (function (_super) {
     __extends(Proteccion, _super);
     function Proteccion(game, x, y, key, frame, id) {
@@ -298,7 +292,6 @@ var Proteccion = (function (_super) {
             proteccion.health = 4;
         }, this);
     }
-
     // Update
     Proteccion.prototype.update = function () {
         _super.prototype.update.call(this);
@@ -318,7 +311,7 @@ var Proteccion = (function (_super) {
         }
     };
     return Proteccion;
-})(Phaser.Sprite);
+}(Phaser.Sprite));
 var Enemigo = (function (_super) {
     __extends(Enemigo, _super);
     // Constructor de los enemigos
@@ -329,9 +322,8 @@ var Enemigo = (function (_super) {
         this.game.physics.enable(this);
         this.body.enableBody = true;
     }
-
     return Enemigo;
-})(Phaser.Sprite);
+}(Phaser.Sprite));
 var Marciano1 = (function (_super) {
     __extends(Marciano1, _super);
     // Constructor de los enemigos
@@ -345,7 +337,6 @@ var Marciano1 = (function (_super) {
         this.game.physics.enable(this);
         this.body.enableBody = true;
     }
-
     Marciano1.prototype.update = function () {
         _super.prototype.update.call(this);
         if ((this.game.jugador.body.x - 30 < this.body.x) && (this.body.x < this.game.jugador.body.x + 30)) {
@@ -367,7 +358,7 @@ var Marciano1 = (function (_super) {
         }
     };
     return Marciano1;
-})(Enemigo);
+}(Enemigo));
 var Satelite = (function (_super) {
     __extends(Satelite, _super);
     // Constructor de los enemigos
@@ -384,15 +375,13 @@ var Satelite = (function (_super) {
         this.game.sonidoPlatillo.loop = true;
         this.game.sonidoPlatillo.play();
     }
-
     return Satelite;
-})(Enemigo);
+}(Enemigo));
 var EnemigosFactory = (function () {
     // Constructores
     function EnemigosFactory(game) {
         this.game = game;
     }
-
     // Con este metodo
     EnemigosFactory.prototype.generarEnemigo = function (key, x, y) {
         if (key == 'marciano1') {
@@ -406,7 +395,7 @@ var EnemigosFactory = (function () {
         }
     };
     return EnemigosFactory;
-})();
+}());
 window.onload = function () {
     new SimpleGame();
 };

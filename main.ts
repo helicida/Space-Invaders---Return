@@ -134,7 +134,7 @@ class SimpleGame extends Phaser.Game {
             this.game.proyectiles = this.add.group();
             this.game.proyectiles.enableBody = true;
             this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-            this.game.proyectiles.createMultiple(1000, 'proyectiles');
+            this.game.proyectiles.createMultiple(30, 'proyectiles');
 
             this.game.proyectiles.setAll('anchor.x', 0.5);
             this.game.proyectiles.setAll('anchor.y', 0.5);
@@ -149,7 +149,7 @@ class SimpleGame extends Phaser.Game {
             this.game.proyectilesEnemigos = this.add.group();
             this.game.proyectilesEnemigos.enableBody = true;
             this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
-            this.game.proyectilesEnemigos.createMultiple(20, 'enemyShoot');
+            this.game.proyectilesEnemigos.createMultiple(15, 'enemyShoot');
 
             this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
             this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
