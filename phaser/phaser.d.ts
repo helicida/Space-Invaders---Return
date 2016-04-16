@@ -5848,6 +5848,7 @@ declare module Phaser {
         static EXACT_FIT:number;
         static NO_SCALE:number;
         static SHOW_ALL:number;
+        static NO_BORDER:number;
         static RESIZE:number;
         static USER_SCALE:number;
 

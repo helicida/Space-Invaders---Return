@@ -50,7 +50,7 @@ class SimpleGame extends Phaser.Game {
         CADENCIA_DISPARO = 500;  // Tiempo entre disparo y disparo
 
         constructor() {
-            super(1366, 768, Phaser.CANVAS, 'gameDiv');
+            super(1920, 1080, Phaser.CANVAS, 'gameDiv');
             this.state.add('main', mainState);
 
             this.state.start('main');
