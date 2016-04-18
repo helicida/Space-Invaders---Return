@@ -2817,7 +2817,6 @@ declare module PIXI {
 
         static graphicsDataPool:any[];
 
-
         /**
          * Renders the graphics object
          *

@@ -3,9 +3,19 @@
     "module": "commonjs",
     "sourceMap": true,
     "target": "es5",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "out": "main.js"
   },
   "files": [
-    "main.ts"
+    "GameObjects/Player.ts",
+    "GameObjects/Enemigos/Enemigo.ts",
+    "GameObjects/Enemigos/Marciano1.ts",
+    "GameObjects/Enemigos/Satelite.ts",
+    "GameObjects/Obstaculos/Protecciones.ts",
+    "GameObjects/Enemigos/EnemigosFactory.ts",
+    "main.ts",
+    "Stages/BootState.ts",
+    "Stages/LoadState.ts",
+    "Stages/PlayState.ts"
   ]
 }
