@@ -38,11 +38,11 @@ module MyGame {
 
             // Cargamos una imagen que hará de fondo en la pantalla de menu
             // this.load.image('fondo', 'assets/splashScreen.png');
-        }
+        };
 
         create():void {
             super.create();
             this.game.state.start('play');
-        }
+        };
     }
 }

@@ -15,7 +15,7 @@ module MyGame {
             super.preload();
 
 
-        }
+        };
 
         create():void {
             super.create();
@@ -36,7 +36,7 @@ module MyGame {
             this.createMonsters();
             this.createExplosions();
             this.createTexts();
-        }
+        };
 
         createTexts() {
 
@@ -54,7 +54,7 @@ module MyGame {
 
             this.game.scoreText.fixedToCamera = true;
 
-        }
+        };
 
         createJugador() {
             // Para el movimiento de la barra con las teclas
@@ -62,7 +62,7 @@ module MyGame {
 
             var jugador = new Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship', null);
             this.game.jugador = this.add.existing(jugador);
-        }
+        };
 
         createProyectiles() {
             this.game.proyectiles = this.add.group();
@@ -154,10 +154,14 @@ module MyGame {
 
                     // Anyadimos los enemigos a su grupo
                     this.add.existing(marcianos1);
+
+                    console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
+                    marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
+                    marcianos1.animations.play('general');
                     this.game.marcianos1.add(marcianos1);
                 }
             }
-        }
+        };
 
         fire():void {
 
@@ -175,7 +179,7 @@ module MyGame {
                     this.game.nextFire = this.time.now + this.game.CADENCIA_DISPARO;
                 }
             }
-        }
+        };
 
         explosion(x:number, y:number):void {
 
@@ -210,7 +214,7 @@ module MyGame {
 
                 tween.start();
             }
-        }
+        };
 
         matarMarcianos(enemigo:Enemigo, proyectil:Phaser.Sprite) {
 
@@ -224,7 +228,7 @@ module MyGame {
             // Actualizamos la puntuación
             this.game.score += 10;
             this.game.scoreText.setText("Score: " + this.game.score);
-        }
+        };
 
         matarSatelites(satelite:Satelite, proyectil:Phaser.Sprite) {
 
@@ -240,7 +244,7 @@ module MyGame {
             // Actualizamos la puntuación
             this.game.score += 100;
             this.game.scoreText.setText("Score: " + this.game.score);
-        }
+        };
 
         danyarJugador(jugador:Player, proyectil:Phaser.Sprite) {
 
@@ -255,7 +259,7 @@ module MyGame {
 
             this.explosion(proyectil.x, proyectil.y);
             proyectil.kill();
-        }
+        };
 
         update():void {
             super.update();
@@ -307,7 +311,6 @@ module MyGame {
             this.game.jugador.position.x = this.game.input.x;
         }
     }
-
     window.onload = () => {
         new SimpleGame();
     };

@@ -68,8 +68,11 @@ var MyGame;
             this.game = game;
             this.game.physics.enable(this);
             this.body.enableBody = true;
-            this.animations.add('general', Phaser.Animation.generateFrameNames("enemigo-1-", 1, 2), 1, true);
-            this.animations.play('general');
+            /*
+             this.sprite.animations.add("happy",   Phaser.Animation.generateFrameNames("Happy",	0,29,'',4),	60, false, false);
+             this.sprite.animations.add("fly",     Phaser.Animation.generateFrameNames("Idle", 	0,29,'',4),	60, true,  false);
+             this.sprite.animations.add("scared",  Phaser.Animation.generateFrameNames("Scared",	0,29,'',4), 60, false, false);
+             this.sprite.animations.add("shocked", Phaser.Animation.generateFrameNames("Shocked",0,59,'',4), 60, false, false);*/
         }
         Marciano1.prototype.update = function () {
             _super.prototype.update.call(this);
@@ -403,6 +406,9 @@ var MyGame;
                     var marcianos1 = factory.generarEnemigo('marciano1', x, y);
                     // Anyadimos los enemigos a su grupo
                     this.add.existing(marcianos1);
+                    console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
+                    marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
+                    marcianos1.animations.play('general');
                     this.game.marcianos1.add(marcianos1);
                 }
             }

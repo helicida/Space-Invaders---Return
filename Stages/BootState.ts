@@ -8,14 +8,14 @@ module MyGame {
         preload():void {
             super.preload();
             this.load.image('progressBar', 'assets/progressBar.png');
-        }
+        };
 
         create():void {
             super.create();
 
             this.inicializaCampoDeJuego();
             this.game.state.start('load');
-        }
+        };
 
         private inicializaCampoDeJuego() {
             this.stage.backgroundColor = "#000000";
