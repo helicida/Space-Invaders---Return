@@ -60,7 +60,7 @@ module MyGame {
             // Para el movimiento de la barra con las teclas
             this.game.cursor = this.input.keyboard.createCursorKeys();
 
-            var jugador = new Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'nave', 0);
+            var jugador = new Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship', null);
             this.game.jugador = this.add.existing(jugador);
         }
 
@@ -248,6 +248,9 @@ module MyGame {
 
             if (jugador.health == 0) {
                 jugador.kill();
+                this.game.endGameText = this.add.text(this.world.centerX - 20, this.world.centerY - 20, 'Has perdido',
+                    {font: "50px Arial", fill: "#ffffff"});
+
             }
 
             this.explosion(proyectil.x, proyectil.y);

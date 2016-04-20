@@ -13,7 +13,7 @@ module MyGame {
         id:string;   // ID con la que identificaremos al jugador
 
         // Constructores
-        constructor(id:string, numeroVidas:number, game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
+        constructor(id:string, numeroVidas:number, game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number, animacion:string) {
             super(game, x, y, key, frame);
 
             this.id = id;
@@ -33,6 +33,7 @@ module MyGame {
             this.body.maxVelocity.setTo(this.game.VELOCIDAD_MAXIMA, 0); // x, y
             this.body.bounce.setTo(0);  // Que no rebote
             this.body.immovable = true;
+
         }
     }
 }

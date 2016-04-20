@@ -18,6 +18,7 @@ module MyGame {
         // Textos que mostramos en pantalla
         scoreText:Phaser.Text;
         livesText:Phaser.Text;
+        endGameText:Phaser.Text;
         MARGEN_TEXTOS = 25;
 
         // Tilemaps y TileLayers

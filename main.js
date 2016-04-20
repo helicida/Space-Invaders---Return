@@ -11,7 +11,7 @@ var MyGame;
     var Player = (function (_super) {
         __extends(Player, _super);
         // Constructores
-        function Player(id, numeroVidas, game, x, y, key, frame) {
+        function Player(id, numeroVidas, game, x, y, key, frame, animacion) {
             _super.call(this, game, x, y, key, frame);
             this.id = id;
             this.health = numeroVidas;
@@ -28,7 +28,6 @@ var MyGame;
             this.body.bounce.setTo(0); // Que no rebote
             this.body.immovable = true;
         }
-
         return Player;
     })(Phaser.Sprite);
     MyGame.Player = Player;
@@ -48,7 +47,6 @@ var MyGame;
             this.game.physics.enable(this);
             this.body.enableBody = true;
         }
-
         return Enemigo;
     })(Phaser.Sprite);
     MyGame.Enemigo = Enemigo;
@@ -70,8 +68,9 @@ var MyGame;
             this.game = game;
             this.game.physics.enable(this);
             this.body.enableBody = true;
+            this.animations.add('general', Phaser.Animation.generateFrameNames("enemigo-1-", 1, 2), 1, true);
+            this.animations.play('general');
         }
-
         Marciano1.prototype.update = function () {
             _super.prototype.update.call(this);
             if ((this.game.jugador.body.x - 30 < this.body.x) && (this.body.x < this.game.jugador.body.x + 30)) {
@@ -91,6 +90,9 @@ var MyGame;
                     this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
                 }
             }
+        };
+        Marciano1.prototype.animacion = function () {
+            this.animations.play('general');
         };
         return Marciano1;
     })(MyGame.Enemigo);
@@ -117,7 +119,6 @@ var MyGame;
             this.game.sonidoPlatillo.loop = true;
             this.game.sonidoPlatillo.play();
         }
-
         return Satelite;
     })(MyGame.Enemigo);
     MyGame.Satelite = Satelite;
@@ -137,7 +138,6 @@ var MyGame;
                 proteccion.health = 4;
             }, this);
         }
-
         // Update
         Proteccion.prototype.update = function () {
             _super.prototype.update.call(this);
@@ -169,7 +169,6 @@ var MyGame;
         function EnemigosFactory(game) {
             this.game = game;
         }
-
         // Con este metodo
         EnemigosFactory.prototype.generarEnemigo = function (key, x, y) {
             if (key == 'marciano1') {
@@ -212,7 +211,6 @@ var MyGame;
             this.state.add("play", MyGame.PlayState);
             this.state.start("boot");
         }
-
         return SimpleGame;
     })(Phaser.Game);
     MyGame.SimpleGame = SimpleGame;
@@ -230,7 +228,6 @@ var MyGame;
         function BootState() {
             _super.apply(this, arguments);
         }
-
         BootState.prototype.preload = function () {
             _super.prototype.preload.call(this);
             this.load.image('progressBar', 'assets/progressBar.png');
@@ -258,7 +255,6 @@ var MyGame;
         function LoadState() {
             _super.apply(this, arguments);
         }
-
         LoadState.prototype.preload = function () {
             _super.prototype.preload.call(this);
             // Agregamos un texto de cargando a la pantalla
@@ -272,13 +268,14 @@ var MyGame;
             progressBar.anchor.setTo(0.5, 0.5);
             this.load.setPreloadSprite(progressBar);
             // Importamos las imagenes
-            this.load.image('nave', 'assets/png/spaceship.png');
+            //this.load.image('nave', 'assets/png/spaceship.png');
             this.load.image('proyectiles', 'assets/png/enemyShoot.png');
             // Enemigos
-            this.load.image('marciano1', 'assets/png/enemigo1.png');
+            this.load.image('marciano1', 'assets/png/enemigo1-1.png');
             this.load.image('satelite', 'assets/png/satelite.png');
             this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
             this.load.image('explosion', 'assets/png/explosion.png');
+            this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
             // Cargamos el audio
             this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
             this.load.audio('playerShootSound', 'sounds/playerShoot.wav');
@@ -306,7 +303,6 @@ var MyGame;
         function PlayState() {
             _super.apply(this, arguments);
         }
-
         PlayState.prototype.preload = function () {
             _super.prototype.preload.call(this);
         };
@@ -345,7 +341,7 @@ var MyGame;
         PlayState.prototype.createJugador = function () {
             // Para el movimiento de la barra con las teclas
             this.game.cursor = this.input.keyboard.createCursorKeys();
-            var jugador = new MyGame.Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'nave', 0);
+            var jugador = new MyGame.Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship', null);
             this.game.jugador = this.add.existing(jugador);
         };
         PlayState.prototype.createProyectiles = function () {
@@ -479,6 +475,10 @@ var MyGame;
             jugador.damage(1);
             if (jugador.health == 0) {
                 jugador.kill();
+                this.game.endGameText = this.add.text(this.world.centerX - 20, this.world.centerY - 20, 'Has perdido', {
+                    font: "50px Arial",
+                    fill: "#ffffff"
+                });
             }
             this.explosion(proyectil.x, proyectil.y);
             proyectil.kill();

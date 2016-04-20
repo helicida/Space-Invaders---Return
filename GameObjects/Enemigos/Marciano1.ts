@@ -20,6 +20,8 @@ module MyGame {
             this.game = game;
             this.game.physics.enable(this);
             this.body.enableBody = true;
+            this.animations.add('general', Phaser.Animation.generateFrameNames("enemigo-1-", 1, 2), 1, true);
+            this.animations.play('general');
         }
 
         update():void {
@@ -51,6 +53,10 @@ module MyGame {
                     this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
                 }
             }
+        }
+
+        animacion() {
+            this.animations.play('general');
         }
     }
 }
