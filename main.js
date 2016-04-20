@@ -258,10 +258,7 @@ var MyGame;
         LoadState.prototype.preload = function () {
             _super.prototype.preload.call(this);
             // Agregamos un texto de cargando a la pantalla
-            var etiquetaCargando = this.add.text(this.world.centerX, 150, 'Cargando...', {
-                font: '30px Arial',
-                fill: '#ffffff'
-            });
+            var etiquetaCargando = this.add.text(this.world.centerX, 150, 'Cargando...', { font: '30px Arial', fill: '#ffffff' });
             etiquetaCargando.anchor.setTo(0.5, 0.5);
             // Muestra la barra de progreso
             var progressBar = this.add.sprite(this.world.centerX, 200, 'progressBar');
@@ -326,16 +323,10 @@ var MyGame;
         PlayState.prototype.createTexts = function () {
             var width = this.scale.bounds.width;
             // Texto puntuación
-            this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, {
-                font: "30px Arial",
-                fill: "#ffffff"
-            });
+            this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
             // Texto de las vidas
-            this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ', {
-                font: "30px Arial",
-                fill: "#ffffff"
-            });
+            this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ', { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
         };
         PlayState.prototype.createJugador = function () {
@@ -442,7 +433,7 @@ var MyGame;
                 this.add.tween(explosion.scale).to({
                     x: 0, y: 0
                 }, 500).start();
-                var tween = this.add.tween(explosion).to({alpha: 0}, 500);
+                var tween = this.add.tween(explosion).to({ alpha: 0 }, 500);
                 // Una vez terminado matámos la explosión
                 tween.onComplete.add(function () {
                     explosion.kill();
@@ -475,10 +466,7 @@ var MyGame;
             jugador.damage(1);
             if (jugador.health == 0) {
                 jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 20, this.world.centerY - 20, 'Has perdido', {
-                    font: "50px Arial",
-                    fill: "#ffffff"
-                });
+                this.game.endGameText = this.add.text(this.world.centerX - 20, this.world.centerY - 20, 'Has perdido', { font: "50px Arial", fill: "#ffffff" });
             }
             this.explosion(proyectil.x, proyectil.y);
             proyectil.kill();

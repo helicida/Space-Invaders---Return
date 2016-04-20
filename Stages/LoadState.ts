@@ -36,15 +36,8 @@ module MyGame {
             this.load.audio('enemyMove', 'sounds/enemyMove.wav');
             this.load.audio('sateliteMove', 'sounds/ufo_fly.wav');
 
-            if (this.game.device.desktop) {
-                this.cursors = this.input.keyboard.createCursorKeys();
-            } else {
-                this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-                this.scale.pageAlignHorizontally = true;
-                this.scale.pageAlignVertically = true;
-                this.scale.forceOrientation(true);
-                this.scale.startFullScreen(false);
-            }
+            // Cargamos una imagen que hará de fondo en la pantalla de menu
+            // this.load.image('fondo', 'assets/splashScreen.png');
         }
 
         create():void {
