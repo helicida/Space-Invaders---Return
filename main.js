@@ -231,15 +231,18 @@ var MyGame;
             _super.prototype.preload.call(this);
             this.load.image('progressBar', 'assets/progressBar.png');
         };
+        ;
         BootState.prototype.create = function () {
             _super.prototype.create.call(this);
             this.inicializaCampoDeJuego();
             this.game.state.start('load');
         };
+        ;
         BootState.prototype.inicializaCampoDeJuego = function () {
             this.stage.backgroundColor = "#000000";
             this.physics.startSystem(Phaser.Physics.ARCADE);
         };
+        ;
         return BootState;
     })(Phaser.State);
     MyGame.BootState = BootState;
@@ -273,10 +276,12 @@ var MyGame;
             // Cargamos una imagen que hará de fondo en la pantalla de menu
             // this.load.image('fondo', 'assets/splashScreen.png');
         };
+        ;
         LoadState.prototype.create = function () {
             _super.prototype.create.call(this);
             this.game.state.start('play');
         };
+        ;
         return LoadState;
     })(Phaser.State);
     MyGame.LoadState = LoadState;
@@ -295,6 +300,7 @@ var MyGame;
         PlayState.prototype.preload = function () {
             _super.prototype.preload.call(this);
         };
+        ;
         PlayState.prototype.create = function () {
             _super.prototype.create.call(this);
             // Asignamos el audio a sus variables
@@ -312,24 +318,24 @@ var MyGame;
             this.createExplosions();
             this.createTexts();
         };
+        ;
         PlayState.prototype.createTexts = function () {
             var width = this.scale.bounds.width;
             // Texto puntuación
             this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
             // Texto de las vidas
-            this.game.livesText = this.add.text(width - 400, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health, {
-                font: "30px Arial",
-                fill: "#ffffff"
-            });
+            this.game.livesText = this.add.text(width - 400, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health, { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
         };
+        ;
         PlayState.prototype.createJugador = function () {
             // Para el movimiento de la barra con las teclas
             this.game.cursor = this.input.keyboard.createCursorKeys();
             var jugador = new MyGame.Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship', null);
             this.game.jugador = this.add.existing(jugador);
         };
+        ;
         PlayState.prototype.createProyectiles = function () {
             this.game.proyectiles = this.add.group();
             this.game.proyectiles.enableBody = true;
@@ -342,6 +348,7 @@ var MyGame;
             this.game.proyectiles.setAll('outOfBoundsKill', true);
             this.game.proyectiles.setAll('checkWorldBounds', true);
         };
+        ;
         PlayState.prototype.createProyectilesEnemigos = function () {
             this.game.proyectilesEnemigos = this.add.group();
             this.game.proyectilesEnemigos.enableBody = true;
@@ -354,6 +361,7 @@ var MyGame;
             this.game.proyectilesEnemigos.setAll('outOfBoundsKill', true);
             this.game.proyectilesEnemigos.setAll('checkWorldBounds', true);
         };
+        ;
         PlayState.prototype.createExplosions = function () {
             this.game.explosiones = this.add.group();
             this.game.explosiones.createMultiple(20, 'sprites', 'explosion');
@@ -363,6 +371,7 @@ var MyGame;
                 explosion.loadTexture('sprites', 'explosion');
             }, this);
         };
+        ;
         PlayState.prototype.createMonsters = function () {
             // Anyadimos el recolectable a un grupo
             this.game.marcianos1 = this.add.group();
@@ -405,6 +414,7 @@ var MyGame;
                 }
             }
         };
+        ;
         PlayState.prototype.fire = function () {
             if (this.time.now > this.game.nextFire) {
                 var bullet = this.game.proyectiles.getFirstDead();
@@ -416,6 +426,7 @@ var MyGame;
                 }
             }
         };
+        ;
         PlayState.prototype.explosion = function (x, y) {
             // Sacamos el primer sprite muerto del group
             var explosion = this.game.explosiones.getFirstDead();
@@ -439,6 +450,7 @@ var MyGame;
                 tween.start();
             }
         };
+        ;
         PlayState.prototype.matarMarcianos = function (enemigo, proyectil) {
             // Matamos los sprites
             enemigo.kill();
@@ -449,12 +461,10 @@ var MyGame;
             this.game.score += 10;
             this.game.scoreText.setText("Score: " + this.game.score);
             if (this.game.marcianos1.countLiving() == 0) {
-                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!', {
-                    font: "50px Arial",
-                    fill: "#ffffff"
-                });
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!', { font: "50px Arial", fill: "#ffffff" });
             }
         };
+        ;
         PlayState.prototype.matarSatelites = function (satelite, proyectil) {
             // Matamos los sprites
             satelite.kill();
@@ -466,18 +476,25 @@ var MyGame;
             this.game.score += 100;
             this.game.scoreText.setText("Score: " + this.game.score);
         };
+        ;
         PlayState.prototype.danyarJugador = function (jugador, proyectil) {
             jugador.damage(1);
             this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
             if (jugador.health == 0) {
-                jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido', {
-                    font: "50px Arial",
-                    fill: "#ffffff"
-                });
+                this.matarJugador(jugador, null);
             }
             this.explosion(proyectil.x, proyectil.y);
             proyectil.kill();
+        };
+        ;
+        PlayState.prototype.matarJugador = function (jugador, enemigo) {
+            jugador.damage(jugador.health);
+            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+            if (jugador.health == 0) {
+                jugador.kill();
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido', { font: "50px Arial", fill: "#ffffff" });
+            }
+            this.explosion(jugador.body.x, jugador.body.y);
         };
         PlayState.prototype.update = function () {
             _super.prototype.update.call(this);
@@ -485,6 +502,7 @@ var MyGame;
             this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
             this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
             this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
+            this.physics.arcade.overlap(this.game.jugador, this.game.marcianos1, this.matarJugador, null, this);
             // Disparar al hacer click
             if (this.input.activePointer.isDown && this.game.jugador.health > 0) {
                 this.fire();
@@ -512,6 +530,9 @@ var MyGame;
                 if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x > this.game.world.width) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
                     this.game.marcianos1.y += 50;
                     this.game.velocidad *= -1;
+                    if (this.game.tiempoMovimiento > 151) {
+                        this.game.tiempoMovimiento -= 150;
+                    }
                     if (this.game.marcianos1.x < 0) {
                         this.game.marcianos1.x = 10;
                     }

@@ -256,23 +256,38 @@ module MyGame {
             this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
 
             if (jugador.health == 0) {
-                jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido',
-                    {font: "50px Arial", fill: "#ffffff"});
-
+                this.matarJugador(jugador, null);
             }
 
             this.explosion(proyectil.x, proyectil.y);
             proyectil.kill();
         };
 
-        update():void {
+        matarJugador(jugador:Player, enemigo:Enemigo) {
+
+            jugador.damage(jugador.health);
+
+            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+
+            if (jugador.health == 0) {
+                jugador.kill();
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido',
+                    {font: "50px Arial", fill: "#ffffff"});
+
+            }
+
+            this.explosion(jugador.body.x, jugador.body.y);
+        }
+
+            update():void {
             super.update();
 
             // Colisions
             this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
             this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
             this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
+            this.physics.arcade.overlap(this.game.jugador, this.game.marcianos1, this.matarJugador, null, this);
+
 
             // Disparar al hacer click
             if (this.input.activePointer.isDown && this.game.jugador.health > 0) {
@@ -309,6 +324,10 @@ module MyGame {
 
                     this.game.marcianos1.y += 50;
                     this.game.velocidad *= -1;
+
+                    if(this.game.tiempoMovimiento > 151){
+                        this.game.tiempoMovimiento -= 150;
+                    }
 
                     if (this.game.marcianos1.x < 0) {
                         this.game.marcianos1.x = 10;
