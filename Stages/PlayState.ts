@@ -8,14 +8,11 @@ module MyGame {
 
     export class PlayState extends Phaser.State {
 
-        spriteMarcianos = true;
-
         // game:Phaser.Game;
         game:SimpleGame;
 
         preload():void {
             super.preload();
-
 
         };
 
@@ -51,11 +48,10 @@ module MyGame {
             this.game.scoreText.fixedToCamera = true;
 
             // Texto de las vidas
-            this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ',
+            this.game.livesText = this.add.text(width - 400, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health,
                 {font: "30px Arial", fill: "#ffffff"});
 
             this.game.scoreText.fixedToCamera = true;
-
         };
 
         createJugador() {
@@ -230,6 +226,11 @@ module MyGame {
             // Actualizamos la puntuación
             this.game.score += 10;
             this.game.scoreText.setText("Score: " + this.game.score);
+
+            if (this.game.marcianos1.countLiving() == 0) {
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!',
+                    {font: "50px Arial", fill: "#ffffff"});
+            }
         };
 
         matarSatelites(satelite:Satelite, proyectil:Phaser.Sprite) {
@@ -252,9 +253,11 @@ module MyGame {
 
             jugador.damage(1);
 
+            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+
             if (jugador.health == 0) {
                 jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 60, this.world.centerY - 20, 'Has perdido',
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido',
                     {font: "50px Arial", fill: "#ffffff"});
 
             }
@@ -296,9 +299,7 @@ module MyGame {
                     }, this);
 
                     this.game.spriteMaricanos = true;
-
                 }
-
 
                 // Reproducimos el sonido del movimiento
                 this.game.sonidoMovimeintoEnemigo.play();

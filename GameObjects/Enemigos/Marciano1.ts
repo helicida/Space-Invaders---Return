@@ -20,12 +20,6 @@ module MyGame {
             this.game = game;
             this.game.physics.enable(this);
             this.body.enableBody = true;
-
-            /*
-             this.sprite.animations.add("happy",   Phaser.Animation.generateFrameNames("Happy",	0,29,'',4),	60, false, false);
-             this.sprite.animations.add("fly",     Phaser.Animation.generateFrameNames("Idle", 	0,29,'',4),	60, true,  false);
-             this.sprite.animations.add("scared",  Phaser.Animation.generateFrameNames("Scared",	0,29,'',4), 60, false, false);
-             this.sprite.animations.add("shocked", Phaser.Animation.generateFrameNames("Shocked",0,59,'',4), 60, false, false);*/
         }
 
         update():void {
@@ -50,7 +44,6 @@ module MyGame {
                 if (proyectilEnemigo) {
 
                     proyectilEnemigo.reset(x, y + this.height);
-                    this.game.livesText.setText("Coordenada x: " + this.body.x + ", Coordenada y:" + this.body.y + "| Vida jugador:" + this.game.jugador.health);
 
                     proyectilEnemigo.body.velocity.setTo(0, 500);
 

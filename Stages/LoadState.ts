@@ -19,8 +19,6 @@ module MyGame {
             this.load.setPreloadSprite(progressBar);
 
             // Importamos las imagenes
-
-            this.load.image('satelite', 'assets/png/satelite.png');
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
 
             // Cargamos el audio

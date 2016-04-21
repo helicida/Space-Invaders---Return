@@ -68,11 +68,6 @@ var MyGame;
             this.game = game;
             this.game.physics.enable(this);
             this.body.enableBody = true;
-            /*
-             this.sprite.animations.add("happy",   Phaser.Animation.generateFrameNames("Happy",	0,29,'',4),	60, false, false);
-             this.sprite.animations.add("fly",     Phaser.Animation.generateFrameNames("Idle", 	0,29,'',4),	60, true,  false);
-             this.sprite.animations.add("scared",  Phaser.Animation.generateFrameNames("Scared",	0,29,'',4), 60, false, false);
-             this.sprite.animations.add("shocked", Phaser.Animation.generateFrameNames("Shocked",0,59,'',4), 60, false, false);*/
         }
         Marciano1.prototype.update = function () {
             _super.prototype.update.call(this);
@@ -88,7 +83,6 @@ var MyGame;
                 var proyectilEnemigo = this.game.proyectilesEnemigos.getFirstDead();
                 if (proyectilEnemigo) {
                     proyectilEnemigo.reset(x, y + this.height);
-                    this.game.livesText.setText("Coordenada x: " + this.body.x + ", Coordenada y:" + this.body.y + "| Vida jugador:" + this.game.jugador.health);
                     proyectilEnemigo.body.velocity.setTo(0, 500);
                     this.nextFire = this.game.time.now + this.CADENCIA_DISPARO;
                 }
@@ -116,6 +110,7 @@ var MyGame;
             this.game.physics.enable(this);
             this.body.enableBody = true;
             this.body.collideWorldBounds = true;
+            this.loadTexture('sprites', key.toString());
             // Rebote
             this.body.velocity.x = 400;
             this.body.bounce.setTo(1);
@@ -269,7 +264,6 @@ var MyGame;
             progressBar.anchor.setTo(0.5, 0.5);
             this.load.setPreloadSprite(progressBar);
             // Importamos las imagenes
-            this.load.image('satelite', 'assets/png/satelite.png');
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
             // Cargamos el audio
             this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
@@ -297,7 +291,6 @@ var MyGame;
         __extends(PlayState, _super);
         function PlayState() {
             _super.apply(this, arguments);
-            this.spriteMarcianos = true;
         }
         PlayState.prototype.preload = function () {
             _super.prototype.preload.call(this);
@@ -325,7 +318,10 @@ var MyGame;
             this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
             // Texto de las vidas
-            this.game.livesText = this.add.text(width - 900, this.game.MARGEN_TEXTOS, 'Coordenadas: ', { font: "30px Arial", fill: "#ffffff" });
+            this.game.livesText = this.add.text(width - 400, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health, {
+                font: "30px Arial",
+                fill: "#ffffff"
+            });
             this.game.scoreText.fixedToCamera = true;
         };
         PlayState.prototype.createJugador = function () {
@@ -452,6 +448,12 @@ var MyGame;
             // Actualizamos la puntuación
             this.game.score += 10;
             this.game.scoreText.setText("Score: " + this.game.score);
+            if (this.game.marcianos1.countLiving() == 0) {
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!', {
+                    font: "50px Arial",
+                    fill: "#ffffff"
+                });
+            }
         };
         PlayState.prototype.matarSatelites = function (satelite, proyectil) {
             // Matamos los sprites
@@ -466,9 +468,10 @@ var MyGame;
         };
         PlayState.prototype.danyarJugador = function (jugador, proyectil) {
             jugador.damage(1);
+            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
             if (jugador.health == 0) {
                 jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 60, this.world.centerY - 20, 'Has perdido', {
+                this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido', {
                     font: "50px Arial",
                     fill: "#ffffff"
                 });

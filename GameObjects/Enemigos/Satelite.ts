@@ -17,6 +17,7 @@ module MyGame {
             this.game.physics.enable(this);
             this.body.enableBody = true;
             this.body.collideWorldBounds = true;
+            this.loadTexture('sprites', key.toString());
 
             // Rebote
             this.body.velocity.x = 400;
