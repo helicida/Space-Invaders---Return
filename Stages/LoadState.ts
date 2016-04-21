@@ -19,15 +19,8 @@ module MyGame {
             this.load.setPreloadSprite(progressBar);
 
             // Importamos las imagenes
-            //this.load.image('nave', 'assets/png/spaceship.png');
-            this.load.image('proyectiles', 'assets/png/enemyShoot.png');
 
-            // Enemigos
-            this.load.image('marciano1', 'assets/png/enemigo1-1.png');
             this.load.image('satelite', 'assets/png/satelite.png');
-            this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
-            this.load.image('explosion', 'assets/png/explosion.png');
-
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
 
             // Cargamos el audio

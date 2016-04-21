@@ -8,6 +8,8 @@ module MyGame {
 
     export class PlayState extends Phaser.State {
 
+        spriteMarcianos = true;
+
         // game:Phaser.Game;
         game:SimpleGame;
 
@@ -68,7 +70,7 @@ module MyGame {
             this.game.proyectiles = this.add.group();
             this.game.proyectiles.enableBody = true;
             this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-            this.game.proyectiles.createMultiple(30, 'proyectiles');
+            this.game.proyectiles.createMultiple(30, 'sprites', 'enemyShoot');
 
             this.game.proyectiles.setAll('anchor.x', 0.5);
             this.game.proyectiles.setAll('anchor.y', 0.5);
@@ -83,7 +85,7 @@ module MyGame {
             this.game.proyectilesEnemigos = this.add.group();
             this.game.proyectilesEnemigos.enableBody = true;
             this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
-            this.game.proyectilesEnemigos.createMultiple(15, 'enemyShoot');
+            this.game.proyectilesEnemigos.createMultiple(15, 'sprites', 'enemyShoot');
 
             this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
             this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
@@ -96,13 +98,13 @@ module MyGame {
         private createExplosions() {
 
             this.game.explosiones = this.add.group();
-            this.game.explosiones.createMultiple(20, 'explosion');
+            this.game.explosiones.createMultiple(20, 'sprites', 'explosion');
 
             this.game.explosiones.setAll('anchor.x', 0.5);
             this.game.explosiones.setAll('anchor.y', 0.5);
 
             this.game.explosiones.forEach((explosion:Phaser.Sprite) => {
-                explosion.loadTexture('explosion');
+                explosion.loadTexture('sprites', 'explosion');
             }, this);
         };
 
@@ -156,8 +158,8 @@ module MyGame {
                     this.add.existing(marcianos1);
 
                     console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
-                    marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
-                    marcianos1.animations.play('general');
+                    //marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
+                    //marcianos1.animations.play('general');
                     this.game.marcianos1.add(marcianos1);
                 }
             }
@@ -252,7 +254,7 @@ module MyGame {
 
             if (jugador.health == 0) {
                 jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 20, this.world.centerY - 20, 'Has perdido',
+                this.game.endGameText = this.add.text(this.world.centerX - 60, this.world.centerY - 20, 'Has perdido',
                     {font: "50px Arial", fill: "#ffffff"});
 
             }
@@ -280,6 +282,23 @@ module MyGame {
                 // Movimientos
                 this.game.marcianos1.x = this.game.marcianos1.x + this.game.velocidad;
                 this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
+
+                if (this.game.spriteMaricanos == true) {
+                    this.game.marcianos1.forEach((marciano1:Phaser.Sprite) => {
+                        marciano1.loadTexture('sprites', 'enemigo1-1');
+                    }, this);
+
+                    this.game.spriteMaricanos = false;
+                }
+                else {
+                    this.game.marcianos1.forEach((marciano1:Phaser.Sprite) => {
+                        marciano1.loadTexture('sprites', 'enemigo1-2');
+                    }, this);
+
+                    this.game.spriteMaricanos = true;
+
+                }
+
 
                 // Reproducimos el sonido del movimiento
                 this.game.sonidoMovimeintoEnemigo.play();

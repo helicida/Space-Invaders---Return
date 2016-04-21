@@ -34,6 +34,7 @@ module MyGame {
         tiempoMovimiento = 800;
 
         explosiones:Phaser.Group;
+        spriteMaricanos = true;
 
         // Sprites
         jugador:Player;

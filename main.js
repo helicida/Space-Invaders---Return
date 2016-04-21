@@ -202,6 +202,7 @@ var MyGame;
             this.velocidad = 10;
             this.nextMovement = 0;
             this.tiempoMovimiento = 800;
+            this.spriteMaricanos = true;
             // Variables auxiliares
             this.nextFire = 0;
             // Constantes
@@ -268,13 +269,7 @@ var MyGame;
             progressBar.anchor.setTo(0.5, 0.5);
             this.load.setPreloadSprite(progressBar);
             // Importamos las imagenes
-            //this.load.image('nave', 'assets/png/spaceship.png');
-            this.load.image('proyectiles', 'assets/png/enemyShoot.png');
-            // Enemigos
-            this.load.image('marciano1', 'assets/png/enemigo1-1.png');
             this.load.image('satelite', 'assets/png/satelite.png');
-            this.load.image('enemyShoot', 'assets/png/enemyShoot.png');
-            this.load.image('explosion', 'assets/png/explosion.png');
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
             // Cargamos el audio
             this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
@@ -302,6 +297,7 @@ var MyGame;
         __extends(PlayState, _super);
         function PlayState() {
             _super.apply(this, arguments);
+            this.spriteMarcianos = true;
         }
         PlayState.prototype.preload = function () {
             _super.prototype.preload.call(this);
@@ -342,7 +338,7 @@ var MyGame;
             this.game.proyectiles = this.add.group();
             this.game.proyectiles.enableBody = true;
             this.game.proyectiles.physicsBodyType = Phaser.Physics.ARCADE;
-            this.game.proyectiles.createMultiple(30, 'proyectiles');
+            this.game.proyectiles.createMultiple(30, 'sprites', 'enemyShoot');
             this.game.proyectiles.setAll('anchor.x', 0.5);
             this.game.proyectiles.setAll('anchor.y', 0.5);
             this.game.proyectiles.setAll('scale.x', 0.5);
@@ -354,7 +350,7 @@ var MyGame;
             this.game.proyectilesEnemigos = this.add.group();
             this.game.proyectilesEnemigos.enableBody = true;
             this.game.proyectilesEnemigos.physicsBodyType = Phaser.Physics.ARCADE;
-            this.game.proyectilesEnemigos.createMultiple(15, 'enemyShoot');
+            this.game.proyectilesEnemigos.createMultiple(15, 'sprites', 'enemyShoot');
             this.game.proyectilesEnemigos.setAll('anchor.x', 0.5);
             this.game.proyectilesEnemigos.setAll('anchor.y', 0.5);
             this.game.proyectilesEnemigos.setAll('scale.x', 0.5);
@@ -364,11 +360,11 @@ var MyGame;
         };
         PlayState.prototype.createExplosions = function () {
             this.game.explosiones = this.add.group();
-            this.game.explosiones.createMultiple(20, 'explosion');
+            this.game.explosiones.createMultiple(20, 'sprites', 'explosion');
             this.game.explosiones.setAll('anchor.x', 0.5);
             this.game.explosiones.setAll('anchor.y', 0.5);
             this.game.explosiones.forEach(function (explosion) {
-                explosion.loadTexture('explosion');
+                explosion.loadTexture('sprites', 'explosion');
             }, this);
         };
         PlayState.prototype.createMonsters = function () {
@@ -407,8 +403,8 @@ var MyGame;
                     // Anyadimos los enemigos a su grupo
                     this.add.existing(marcianos1);
                     console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
-                    marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
-                    marcianos1.animations.play('general');
+                    //marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
+                    //marcianos1.animations.play('general');
                     this.game.marcianos1.add(marcianos1);
                 }
             }
@@ -472,7 +468,10 @@ var MyGame;
             jugador.damage(1);
             if (jugador.health == 0) {
                 jugador.kill();
-                this.game.endGameText = this.add.text(this.world.centerX - 20, this.world.centerY - 20, 'Has perdido', { font: "50px Arial", fill: "#ffffff" });
+                this.game.endGameText = this.add.text(this.world.centerX - 60, this.world.centerY - 20, 'Has perdido', {
+                    font: "50px Arial",
+                    fill: "#ffffff"
+                });
             }
             this.explosion(proyectil.x, proyectil.y);
             proyectil.kill();
@@ -492,6 +491,18 @@ var MyGame;
                 // Movimientos
                 this.game.marcianos1.x = this.game.marcianos1.x + this.game.velocidad;
                 this.game.nextMovement = this.game.time.now + this.game.tiempoMovimiento;
+                if (this.game.spriteMaricanos == true) {
+                    this.game.marcianos1.forEach(function (marciano1) {
+                        marciano1.loadTexture('sprites', 'enemigo1-1');
+                    }, this);
+                    this.game.spriteMaricanos = false;
+                }
+                else {
+                    this.game.marcianos1.forEach(function (marciano1) {
+                        marciano1.loadTexture('sprites', 'enemigo1-2');
+                    }, this);
+                    this.game.spriteMaricanos = true;
+                }
                 // Reproducimos el sonido del movimiento
                 this.game.sonidoMovimeintoEnemigo.play();
                 // Comprobamos que no nos hayamos salido de la pantalla
