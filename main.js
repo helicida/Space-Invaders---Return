@@ -134,13 +134,11 @@ var MyGame;
             this.game.physics.enable(this, Phaser.Physics.ARCADE);
             this.body.enableBody = true;
             this.body.immovable = true;
+            // Ajustamos el tamaño para las colisiones
+            this.body.width = 150;
+            this.body.height = 100;
             this.loadTexture('proteccion1');
-            this.anchor.setTo(0.5, 0.5);
         }
-        // Update
-        Proteccion.prototype.update = function () {
-            _super.prototype.update.call(this);
-        };
         // Metodos
         Proteccion.prototype.danyarProteccion = function () {
             this.health -= 1;
@@ -237,7 +235,9 @@ var MyGame;
         return SimpleGame;
     }(Phaser.Game));
     MyGame.SimpleGame = SimpleGame;
+    ;
 })(MyGame || (MyGame = {}));
+;
 window.onload = function () {
     var game = new MyGame.SimpleGame();
 };
@@ -342,7 +342,7 @@ var MyGame;
             this.createJugador();
             this.createProyectiles();
             this.createProyectilesEnemigos();
-            this.crearProtecciones();
+            this.createProtecciones();
             this.createMonsters();
             this.createExplosions();
             this.createTexts();
@@ -354,7 +354,7 @@ var MyGame;
             this.game.scoreText = this.add.text(this.game.MARGEN_TEXTOS, this.game.MARGEN_TEXTOS, 'Score: ' + this.game.score, { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
             // Texto de las vidas
-            this.game.livesText = this.add.text(width - 400, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health, { font: "30px Arial", fill: "#ffffff" });
+            this.game.livesText = this.add.text(width - 300, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health, { font: "30px Arial", fill: "#ffffff" });
             this.game.scoreText.fixedToCamera = true;
         };
         ;
@@ -378,7 +378,7 @@ var MyGame;
             this.game.proyectiles.setAll('checkWorldBounds', true);
         };
         ;
-        PlayState.prototype.crearProtecciones = function () {
+        PlayState.prototype.createProtecciones = function () {
             this.game.protecciones = this.add.group();
             // Instanciamos la clase factory que es con la que generaremos los enemigos
             var factory = new MyGame.ProteccionesFactory(this.game);
@@ -388,9 +388,10 @@ var MyGame;
             // Anyadimos el recolectable a un grupo
             this.game.protecciones = this.add.group();
             this.game.protecciones.enableBody = true;
-            var proteccion1 = factory.generarProteccion('proteccion', 150, 600);
-            var proteccion2 = factory.generarProteccion('proteccion', 650, 600);
-            var proteccion3 = factory.generarProteccion('proteccion', 1150, 600);
+            this.game.protecciones.physicsBodyType = Phaser.Physics.ARCADE;
+            var proteccion1 = factory.generarProteccion('proteccion', 150, 580);
+            var proteccion2 = factory.generarProteccion('proteccion', 650, 580);
+            var proteccion3 = factory.generarProteccion('proteccion', 1150, 580);
             // Anyadimos el enemigo a su grupo
             this.add.existing(proteccion1);
             this.game.protecciones.add(proteccion1);
@@ -457,9 +458,6 @@ var MyGame;
                     var marcianos1 = factory.generarEnemigo('marciano1', x, y);
                     // Anyadimos los enemigos a su grupo
                     this.add.existing(marcianos1);
-                    console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
-                    //marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
-                    //marcianos1.animations.play('general');
                     this.game.marcianos1.add(marcianos1);
                 }
             }
@@ -529,7 +527,7 @@ var MyGame;
         ;
         PlayState.prototype.danyarJugador = function (jugador, proyectil) {
             jugador.damage(1);
-            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+            this.game.livesText.setText("Vida jugador: " + this.game.jugador.health);
             if (jugador.health == 0) {
                 this.matarJugador(jugador, null);
             }
@@ -539,7 +537,7 @@ var MyGame;
         ;
         PlayState.prototype.matarJugador = function (jugador, enemigo) {
             jugador.damage(jugador.health);
-            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+            this.game.livesText.setText("Vida jugador: " + this.game.jugador.health);
             if (jugador.health == 0) {
                 jugador.kill();
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido', { font: "50px Arial", fill: "#ffffff" });
@@ -553,7 +551,7 @@ var MyGame;
             }
             proyectil.kill();
         };
-        PlayState.prototype.destruirProteccion = function (proteccion, enemigo) {
+        PlayState.prototype.destruirProteccion = function (enemigo, proteccion) {
             proteccion.kill();
         };
         PlayState.prototype.update = function () {

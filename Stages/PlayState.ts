@@ -32,7 +32,7 @@ module MyGame {
             this.createJugador();
             this.createProyectiles();
             this.createProyectilesEnemigos();
-            this.crearProtecciones();
+            this.createProtecciones();
             this.createMonsters();
             this.createExplosions();
             this.createTexts();
@@ -49,7 +49,7 @@ module MyGame {
             this.game.scoreText.fixedToCamera = true;
 
             // Texto de las vidas
-            this.game.livesText = this.add.text(width - 400, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health,
+            this.game.livesText = this.add.text(width - 300, this.game.MARGEN_TEXTOS, 'Vidas del jugador: ' + this.game.jugador.health,
                 {font: "30px Arial", fill: "#ffffff"});
 
             this.game.scoreText.fixedToCamera = true;
@@ -77,7 +77,7 @@ module MyGame {
             this.game.proyectiles.setAll('checkWorldBounds', true);
         };
         
-        crearProtecciones(){
+        createProtecciones(){
 
             this.game.protecciones = this.add.group();
 
@@ -91,10 +91,11 @@ module MyGame {
             // Anyadimos el recolectable a un grupo
             this.game.protecciones = this.add.group();
             this.game.protecciones.enableBody = true;
+            this.game.protecciones.physicsBodyType = Phaser.Physics.ARCADE;
 
-            var proteccion1 = factory.generarProteccion('proteccion', 150, 600);
-            var proteccion2 = factory.generarProteccion('proteccion', 650, 600);
-            var proteccion3 = factory.generarProteccion('proteccion', 1150, 600);
+            var proteccion1 = factory.generarProteccion('proteccion', 150, 580);
+            var proteccion2 = factory.generarProteccion('proteccion', 650, 580);
+            var proteccion3 = factory.generarProteccion('proteccion', 1150, 580);
 
             // Anyadimos el enemigo a su grupo
             this.add.existing(proteccion1);
@@ -184,11 +185,11 @@ module MyGame {
 
                     // Anyadimos los enemigos a su grupo
                     this.add.existing(marcianos1);
+                    this.game.marcianos1.add(marcianos1);
 
-                    console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
+                    //console.log(Phaser.Animation.generateFrameNames("enemigo1-", 1, 2)[1]);
                     //marcianos1.animations.add('general', Phaser.Animation.generateFrameNames("enemigo1-", 1, 2), 1, false, true);
                     //marcianos1.animations.play('general');
-                    this.game.marcianos1.add(marcianos1);
                 }
             }
         };
@@ -284,7 +285,7 @@ module MyGame {
 
             jugador.damage(1);
 
-            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+            this.game.livesText.setText("Vida jugador: " + this.game.jugador.health);
 
             if (jugador.health == 0) {
                 this.matarJugador(jugador, null);
@@ -298,7 +299,7 @@ module MyGame {
 
             jugador.damage(jugador.health);
 
-            this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
+            this.game.livesText.setText("Vida jugador: " + this.game.jugador.health);
 
             if (jugador.health == 0) {
 
@@ -323,9 +324,10 @@ module MyGame {
             proyectil.kill();
         }
 
-        destruirProteccion(proteccion:Proteccion, enemigo:Enemigo) {
+        destruirProteccion(enemigo:Enemigo, proteccion:Proteccion) {
             proteccion.kill();
         }
+
 
         update():void {
             super.update();

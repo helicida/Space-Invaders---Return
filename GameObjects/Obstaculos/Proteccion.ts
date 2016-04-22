@@ -17,17 +17,19 @@ module MyGame {
             this.game.physics.enable(this, Phaser.Physics.ARCADE);
             this.body.enableBody = true;
             this.body.immovable = true;
+
+            // Ajustamos el tamaño para las colisiones
+            this.body.width = 150;
+            this.body.height = 100;
+
             this.loadTexture('proteccion1');
-            this.anchor.setTo(0.5, 0.5);
         }
 
-        // Update
-        update():void {
-            super.update();
 
-        }
 
-        // Metodos
+
+    // Metodos
+
         danyarProteccion():void {
 
             this.health -= 1;

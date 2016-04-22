@@ -2,6 +2,7 @@
 
 module MyGame {
 
+    import game = PIXI.game;
     export class SimpleGame extends Phaser.Game {
 
         game:Phaser.Game;
@@ -59,8 +60,8 @@ module MyGame {
             this.state.add("play", PlayState);
             this.state.start("boot");
         }
-    }
-}
+    };
+};
 
 window.onload = () => {
     var game = new MyGame.SimpleGame();
