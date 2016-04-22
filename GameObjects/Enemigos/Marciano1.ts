@@ -51,9 +51,5 @@ module MyGame {
                 }
             }
         }
-
-        animacion() {
-            this.animations.play('general');
-        }
     }
 }

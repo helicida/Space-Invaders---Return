@@ -9,7 +9,7 @@ module MyGame {
     export class PlayState extends Phaser.State {
 
         // game:Phaser.Game;
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         preload():void {
             super.preload();
@@ -59,7 +59,7 @@ module MyGame {
             // Para el movimiento de la barra con las teclas
             this.game.cursor = this.input.keyboard.createCursorKeys();
 
-            var jugador = new Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship', null);
+            var jugador = new Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship');
             this.game.jugador = this.add.existing(jugador);
         };
 
@@ -407,6 +407,6 @@ module MyGame {
         }
     }
     window.onload = () => {
-        new SimpleGame();
+        new SpaceInvadersGame();
     };
 }

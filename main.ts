@@ -3,7 +3,7 @@
 module MyGame {
 
     import game = PIXI.game;
-    export class SimpleGame extends Phaser.Game {
+    export class SpaceInvadersGame extends Phaser.Game {
 
         game:Phaser.Game;
 
@@ -59,10 +59,10 @@ module MyGame {
             this.state.add("load", LoadState);
             this.state.add("play", PlayState);
             this.state.start("boot");
-        }
+        };
     };
 };
 
 window.onload = () => {
-    var game = new MyGame.SimpleGame();
+    var game = new MyGame.SpaceInvadersGame();
 };
