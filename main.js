@@ -1,11 +1,11 @@
-/**
- * Created by 46465442z on 18/04/16.
- */
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+/**
+ * Created by 46465442z on 18/04/16.
+ */
 var MyGame;
 (function (MyGame) {
     var Player = (function (_super) {
@@ -29,7 +29,7 @@ var MyGame;
             this.body.immovable = true;
         }
         return Player;
-    })(Phaser.Sprite);
+    }(Phaser.Sprite));
     MyGame.Player = Player;
 })(MyGame || (MyGame = {}));
 /**
@@ -48,7 +48,7 @@ var MyGame;
             this.body.enableBody = true;
         }
         return Enemigo;
-    })(Phaser.Sprite);
+    }(Phaser.Sprite));
     MyGame.Enemigo = Enemigo;
 })(MyGame || (MyGame = {}));
 /**
@@ -92,7 +92,7 @@ var MyGame;
             this.animations.play('general');
         };
         return Marciano1;
-    })(MyGame.Enemigo);
+    }(MyGame.Enemigo));
     MyGame.Marciano1 = Marciano1;
 })(MyGame || (MyGame = {}));
 /**
@@ -118,7 +118,7 @@ var MyGame;
             this.game.sonidoPlatillo.play();
         }
         return Satelite;
-    })(MyGame.Enemigo);
+    }(MyGame.Enemigo));
     MyGame.Satelite = Satelite;
 })(MyGame || (MyGame = {}));
 /**
@@ -128,34 +128,58 @@ var MyGame;
 (function (MyGame) {
     var Proteccion = (function (_super) {
         __extends(Proteccion, _super);
-        function Proteccion(game, x, y, key, frame, id) {
-            _super.call(this, game, x, y, key, frame);
-            this.id = id;
-            this.protecciones.createMultiple(4, 'proyectiles');
-            this.protecciones.forEach(function (proteccion) {
-                proteccion.health = 4;
-            }, this);
+        function Proteccion(game, key, x, y) {
+            _super.call(this, game, x, y, key, 0);
+            this.health = 8;
+            this.game.physics.enable(this, Phaser.Physics.ARCADE);
+            this.body.enableBody = true;
+            this.body.immovable = true;
+            this.loadTexture('proteccion1');
+            this.anchor.setTo(0.5, 0.5);
         }
         // Update
         Proteccion.prototype.update = function () {
             _super.prototype.update.call(this);
-            this.game.physics.arcade.overlap(this.protecciones, this.game.proyectilesEnemigos, this.danyarProteccion, null, this);
         };
         // Metodos
-        Proteccion.prototype.danyarProteccion = function (proteccion, proyectil) {
-            proteccion.damage(1);
-            if (proteccion.health == 0) {
-                proteccion.kill();
+        Proteccion.prototype.danyarProteccion = function () {
+            this.health -= 1;
+            if (this.health == 6) {
+                this.loadTexture('proteccion2');
             }
-            else if (proteccion.health == 3) {
+            else if (this.health == 4) {
+                this.loadTexture('proteccion3');
             }
-            else if (proteccion.health = 2) {
-            }
-            else if (proteccion.health = 1) {
+            else if (this.health == 2) {
+                this.loadTexture('proteccion4');
             }
         };
         return Proteccion;
-    })(Phaser.Sprite);
+    }(Phaser.Sprite));
+    MyGame.Proteccion = Proteccion;
+})(MyGame || (MyGame = {}));
+/**
+ * Created by sergi on 22/04/16.
+ */
+var MyGame;
+(function (MyGame) {
+    var ProteccionesFactory = (function () {
+        // Constructores
+        function ProteccionesFactory(game) {
+            this.game = game;
+        }
+        // Con este metodo
+        ProteccionesFactory.prototype.generarProteccion = function (key, x, y) {
+            if (key == 'proteccion') {
+                return new MyGame.Proteccion(this.game, key, x, y);
+            }
+            else {
+                return null;
+            }
+        };
+        return ProteccionesFactory;
+    }());
+    MyGame.ProteccionesFactory = ProteccionesFactory;
 })(MyGame || (MyGame = {}));
 /**
  * Created by 46465442z on 18/04/16.
@@ -180,7 +204,7 @@ var MyGame;
             }
         };
         return EnemigosFactory;
-    })();
+    }());
     MyGame.EnemigosFactory = EnemigosFactory;
 })(MyGame || (MyGame = {}));
 /// <reference path="phaser/phaser.d.ts"/>
@@ -211,7 +235,7 @@ var MyGame;
             this.state.start("boot");
         }
         return SimpleGame;
-    })(Phaser.Game);
+    }(Phaser.Game));
     MyGame.SimpleGame = SimpleGame;
 })(MyGame || (MyGame = {}));
 window.onload = function () {
@@ -244,7 +268,7 @@ var MyGame;
         };
         ;
         return BootState;
-    })(Phaser.State);
+    }(Phaser.State));
     MyGame.BootState = BootState;
 })(MyGame || (MyGame = {}));
 /**
@@ -268,6 +292,10 @@ var MyGame;
             this.load.setPreloadSprite(progressBar);
             // Importamos las imagenes
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
+            this.load.image('proteccion1', 'assets/png/protection-1.png');
+            this.load.image('proteccion2', 'assets/png/protection-2.png');
+            this.load.image('proteccion3', 'assets/png/protection-3.png');
+            this.load.image('proteccion4', 'assets/png/protection-4.png');
             // Cargamos el audio
             this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
             this.load.audio('playerShootSound', 'sounds/playerShoot.wav');
@@ -283,7 +311,7 @@ var MyGame;
         };
         ;
         return LoadState;
-    })(Phaser.State);
+    }(Phaser.State));
     MyGame.LoadState = LoadState;
 })(MyGame || (MyGame = {}));
 /**
@@ -314,6 +342,7 @@ var MyGame;
             this.createJugador();
             this.createProyectiles();
             this.createProyectilesEnemigos();
+            this.crearProtecciones();
             this.createMonsters();
             this.createExplosions();
             this.createTexts();
@@ -349,6 +378,27 @@ var MyGame;
             this.game.proyectiles.setAll('checkWorldBounds', true);
         };
         ;
+        PlayState.prototype.crearProtecciones = function () {
+            this.game.protecciones = this.add.group();
+            // Instanciamos la clase factory que es con la que generaremos los enemigos
+            var factory = new MyGame.ProteccionesFactory(this.game);
+            //---------------------------
+            //GENERAMOS EL SATELITE
+            //---------------------------
+            // Anyadimos el recolectable a un grupo
+            this.game.protecciones = this.add.group();
+            this.game.protecciones.enableBody = true;
+            var proteccion1 = factory.generarProteccion('proteccion', 150, 600);
+            var proteccion2 = factory.generarProteccion('proteccion', 650, 600);
+            var proteccion3 = factory.generarProteccion('proteccion', 1150, 600);
+            // Anyadimos el enemigo a su grupo
+            this.add.existing(proteccion1);
+            this.game.protecciones.add(proteccion1);
+            this.add.existing(proteccion2);
+            this.game.protecciones.add(proteccion2);
+            this.add.existing(proteccion3);
+            this.game.protecciones.add(proteccion3);
+        };
         PlayState.prototype.createProyectilesEnemigos = function () {
             this.game.proyectilesEnemigos = this.add.group();
             this.game.proyectilesEnemigos.enableBody = true;
@@ -496,13 +546,28 @@ var MyGame;
             }
             this.explosion(jugador.body.x, jugador.body.y);
         };
+        PlayState.prototype.danyarProteccion = function (proteccion, proyectil) {
+            proteccion.danyarProteccion();
+            if (proteccion.health == 0) {
+                proteccion.kill();
+            }
+            proyectil.kill();
+        };
+        PlayState.prototype.destruirProteccion = function (proteccion, enemigo) {
+            proteccion.kill();
+        };
         PlayState.prototype.update = function () {
             _super.prototype.update.call(this);
-            // Colisions
-            this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
-            this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
-            this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
+            // Colisiones
+            // Proyectiles
+            this.physics.arcade.collide(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
+            this.physics.arcade.collide(this.game.protecciones, this.game.proyectilesEnemigos, this.danyarProteccion, null, this);
+            this.physics.arcade.collide(this.game.protecciones, this.game.proyectiles, this.danyarProteccion, null, this);
+            this.physics.arcade.collide(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
+            this.physics.arcade.collide(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
+            // Enemigos
             this.physics.arcade.overlap(this.game.jugador, this.game.marcianos1, this.matarJugador, null, this);
+            this.physics.arcade.overlap(this.game.marcianos1, this.game.protecciones, this.destruirProteccion, null, this);
             // Disparar al hacer click
             if (this.input.activePointer.isDown && this.game.jugador.health > 0) {
                 this.fire();
@@ -552,7 +617,7 @@ var MyGame;
             this.game.jugador.position.x = this.game.input.x;
         };
         return PlayState;
-    })(Phaser.State);
+    }(Phaser.State));
     MyGame.PlayState = PlayState;
     window.onload = function () {
         new MyGame.SimpleGame();

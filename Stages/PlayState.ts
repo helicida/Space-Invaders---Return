@@ -32,6 +32,7 @@ module MyGame {
             this.createJugador();
             this.createProyectiles();
             this.createProyectilesEnemigos();
+            this.crearProtecciones();
             this.createMonsters();
             this.createExplosions();
             this.createTexts();
@@ -75,6 +76,37 @@ module MyGame {
             this.game.proyectiles.setAll('outOfBoundsKill', true);
             this.game.proyectiles.setAll('checkWorldBounds', true);
         };
+        
+        crearProtecciones(){
+
+            this.game.protecciones = this.add.group();
+
+            // Instanciamos la clase factory que es con la que generaremos los enemigos
+            var factory = new ProteccionesFactory(this.game);
+
+            //---------------------------
+            //GENERAMOS EL SATELITE
+            //---------------------------
+
+            // Anyadimos el recolectable a un grupo
+            this.game.protecciones = this.add.group();
+            this.game.protecciones.enableBody = true;
+
+            var proteccion1 = factory.generarProteccion('proteccion', 150, 600);
+            var proteccion2 = factory.generarProteccion('proteccion', 650, 600);
+            var proteccion3 = factory.generarProteccion('proteccion', 1150, 600);
+
+            // Anyadimos el enemigo a su grupo
+            this.add.existing(proteccion1);
+            this.game.protecciones.add(proteccion1);
+
+            this.add.existing(proteccion2);
+            this.game.protecciones.add(proteccion2);
+
+            this.add.existing(proteccion3);
+            this.game.protecciones.add(proteccion3);
+
+        }
 
         createProyectilesEnemigos() {
 
@@ -170,7 +202,6 @@ module MyGame {
                 if (bullet) {
 
                     bullet.reset(this.game.jugador.x, this.game.jugador.y - this.game.jugador.height);
-
                     bullet.body.velocity.setTo(0, -500);
                     this.game.sonidoDisparoJugador.play();
 
@@ -209,7 +240,7 @@ module MyGame {
                 tween.onComplete.add(() => {
                     explosion.kill();
                 });
-
+                
                 tween.start();
             }
         };
@@ -270,7 +301,9 @@ module MyGame {
             this.game.livesText.setText("Vida jugador:" + this.game.jugador.health);
 
             if (jugador.health == 0) {
+
                 jugador.kill();
+
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido',
                     {font: "50px Arial", fill: "#ffffff"});
 
@@ -279,15 +312,36 @@ module MyGame {
             this.explosion(jugador.body.x, jugador.body.y);
         }
 
-            update():void {
+        danyarProteccion(proteccion:Proteccion, proyectil:Phaser.Sprite) {
+
+            proteccion.danyarProteccion();
+
+            if(proteccion.health == 0){
+                proteccion.kill();
+            }
+
+            proyectil.kill();
+        }
+
+        destruirProteccion(proteccion:Proteccion, enemigo:Enemigo) {
+            proteccion.kill();
+        }
+
+        update():void {
             super.update();
 
-            // Colisions
-            this.physics.arcade.overlap(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
-            this.physics.arcade.overlap(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
-            this.physics.arcade.overlap(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
-            this.physics.arcade.overlap(this.game.jugador, this.game.marcianos1, this.matarJugador, null, this);
+            // Colisiones
 
+            // Proyectiles
+            this.physics.arcade.collide(this.game.marcianos1, this.game.proyectiles, this.matarMarcianos, null, this);
+            this.physics.arcade.collide(this.game.protecciones, this.game.proyectilesEnemigos, this.danyarProteccion, null, this);
+            this.physics.arcade.collide(this.game.protecciones, this.game.proyectiles, this.danyarProteccion, null, this);
+            this.physics.arcade.collide(this.game.sateltites, this.game.proyectiles, this.matarSatelites, null, this);
+            this.physics.arcade.collide(this.game.jugador, this.game.proyectilesEnemigos, this.danyarJugador, null, this);
+
+            // Enemigos
+            this.physics.arcade.overlap(this.game.jugador, this.game.marcianos1, this.matarJugador, null, this);
+            this.physics.arcade.overlap(this.game.marcianos1, this.game.protecciones, this.destruirProteccion, null, this);
 
             // Disparar al hacer click
             if (this.input.activePointer.isDown && this.game.jugador.health > 0) {

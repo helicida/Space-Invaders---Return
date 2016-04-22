@@ -27,6 +27,7 @@ module MyGame {
         // Grupos
         marcianos1:Phaser.Group;
         sateltites:Phaser.Group;
+        protecciones:Phaser.Group;
 
         // Variables
         velocidad = 10;
