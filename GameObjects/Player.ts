@@ -7,13 +7,13 @@ module MyGame {
     export class Player extends Phaser.Sprite {
 
         // Instanciamos el juego
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         // Variables
         id:string;   // ID con la que identificaremos al jugador
 
         // Constructores
-        constructor(id:string, numeroVidas:number, game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
+        constructor(id:string, numeroVidas:number, game:SpaceInvadersGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
             super(game, x, y, key, frame);
 
             this.id = id;

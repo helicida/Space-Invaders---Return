@@ -220,6 +220,8 @@ var MyGame;
             // Variables auxiliares
             this.nextFire = 0;
             // Constantes
+            this.VELOCIDAD_MAXIMA = 450; // pixels/second
+            this.FUERZA_ROZAMIENTO = 100; // Aceleración negativa
             this.ACELERACION = 700; // aceleración
             this.CADENCIA_DISPARO = 500; // Tiempo entre disparo y disparo
             this.state.add("boot", MyGame.BootState);

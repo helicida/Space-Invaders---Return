@@ -48,6 +48,8 @@ module MyGame {
         nextFire = 0;
 
         // Constantes
+        VELOCIDAD_MAXIMA = 450;  // pixels/second
+        FUERZA_ROZAMIENTO = 100; // Aceleración negativa
         ACELERACION = 700;       // aceleración
         CADENCIA_DISPARO = 500;  // Tiempo entre disparo y disparo
 
