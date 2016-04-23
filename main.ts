@@ -33,7 +33,7 @@ module MyGame {
         // Variables
         velocidad = 10;
         nextMovement = 0;
-        tiempoMovimiento = 800;
+        tiempoMovimiento = 700;
 
         explosiones:Phaser.Group;
         spriteMaricanos = true;
@@ -48,10 +48,8 @@ module MyGame {
         nextFire = 0;
 
         // Constantes
-        VELOCIDAD_MAXIMA = 450;  // pixels/second
-        FUERZA_ROZAMIENTO = 100; // Aceleración negativa
         ACELERACION = 700;       // aceleración
-        CADENCIA_DISPARO = 500;  // Tiempo entre disparo y disparo
+        CADENCIA_DISPARO = 200;  // Tiempo entre disparo y disparo
 
         constructor() {
             super(1366, 768, Phaser.CANVAS, 'gameDiv');

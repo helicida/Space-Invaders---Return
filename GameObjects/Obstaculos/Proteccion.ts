@@ -7,10 +7,10 @@ module MyGame {
     export class Proteccion extends Phaser.Sprite {
 
         // Instanciamos el juego
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
 
-        constructor(game:SimpleGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number) {
+        constructor(game:SpaceInvadersGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number) {
             super(game, x, y, key, 0);
 
             this.health = 8;
@@ -22,7 +22,7 @@ module MyGame {
             this.body.width = 150;
             this.body.height = 100;
 
-            this.loadTexture('proteccion1');
+            this.loadTexture('sprites', 'protection-1');
         }
 
 
@@ -35,13 +35,13 @@ module MyGame {
             this.health -= 1;
             
             if (this.health == 6) {
-                this.loadTexture('proteccion2');
+                this.loadTexture('sprites', 'protection-2');
             }
             else if (this.health == 4) {
-                this.loadTexture('proteccion3');
+                this.loadTexture('sprites', 'protection-3');
             }
             else if (this.health == 2) {
-                this.loadTexture('proteccion4');
+                this.loadTexture('sprites', 'protection-4');
             }
         }
 

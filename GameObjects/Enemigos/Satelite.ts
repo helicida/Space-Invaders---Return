@@ -6,10 +6,10 @@ module MyGame {
     export class Satelite extends Enemigo {
 
         // Games
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         // Constructor de los enemigos
-        constructor(game:SimpleGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number) {
+        constructor(game:SpaceInvadersGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number) {
             super(game, x, y, key, 0);
 
             // Ajustmaos el sprite

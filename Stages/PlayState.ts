@@ -260,6 +260,9 @@ module MyGame {
             this.game.scoreText.setText("Score: " + this.game.score);
 
             if (this.game.marcianos1.countLiving() == 0) {
+
+                this.game.sonidoMovimeintoEnemigo.stop();
+
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!',
                     {font: "50px Arial", fill: "#ffffff"});
             }
@@ -307,7 +310,6 @@ module MyGame {
 
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido',
                     {font: "50px Arial", fill: "#ffffff"});
-
             }
 
             this.explosion(jugador.body.x, jugador.body.y);
@@ -373,7 +375,9 @@ module MyGame {
                 }
 
                 // Reproducimos el sonido del movimiento
-                this.game.sonidoMovimeintoEnemigo.play();
+                if(this.game.marcianos1.countLiving() > 1){
+                    this.game.sonidoMovimeintoEnemigo.play();
+                }
 
                 // Comprobamos que no nos hayamos salido de la pantalla
                 if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x > this.game.world.width) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {

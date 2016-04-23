@@ -11,7 +11,7 @@ var MyGame;
     var Player = (function (_super) {
         __extends(Player, _super);
         // Constructores
-        function Player(id, numeroVidas, game, x, y, key, frame, animacion) {
+        function Player(id, numeroVidas, game, x, y, key, frame) {
             _super.call(this, game, x, y, key, frame);
             this.id = id;
             this.health = numeroVidas;
@@ -88,9 +88,6 @@ var MyGame;
                 }
             }
         };
-        Marciano1.prototype.animacion = function () {
-            this.animations.play('general');
-        };
         return Marciano1;
     }(MyGame.Enemigo));
     MyGame.Marciano1 = Marciano1;
@@ -137,19 +134,19 @@ var MyGame;
             // Ajustamos el tamaño para las colisiones
             this.body.width = 150;
             this.body.height = 100;
-            this.loadTexture('proteccion1');
+            this.loadTexture('sprites', 'protection-1');
         }
         // Metodos
         Proteccion.prototype.danyarProteccion = function () {
             this.health -= 1;
             if (this.health == 6) {
-                this.loadTexture('proteccion2');
+                this.loadTexture('sprites', 'protection-2');
             }
             else if (this.health == 4) {
-                this.loadTexture('proteccion3');
+                this.loadTexture('sprites', 'protection-3');
             }
             else if (this.health == 2) {
-                this.loadTexture('proteccion4');
+                this.loadTexture('sprites', 'protection-4');
             }
         };
         return Proteccion;
@@ -208,9 +205,9 @@ var MyGame;
 /// <reference path="phaser/phaser.d.ts"/>
 var MyGame;
 (function (MyGame) {
-    var SimpleGame = (function (_super) {
-        __extends(SimpleGame, _super);
-        function SimpleGame() {
+    var SpaceInvadersGame = (function (_super) {
+        __extends(SpaceInvadersGame, _super);
+        function SpaceInvadersGame() {
             _super.call(this, 1366, 768, Phaser.CANVAS, 'gameDiv');
             // Puntuacion
             this.score = 0;
@@ -218,28 +215,27 @@ var MyGame;
             // Variables
             this.velocidad = 10;
             this.nextMovement = 0;
-            this.tiempoMovimiento = 800;
+            this.tiempoMovimiento = 700;
             this.spriteMaricanos = true;
             // Variables auxiliares
             this.nextFire = 0;
             // Constantes
-            this.VELOCIDAD_MAXIMA = 450; // pixels/second
-            this.FUERZA_ROZAMIENTO = 100; // Aceleración negativa
             this.ACELERACION = 700; // aceleración
-            this.CADENCIA_DISPARO = 500; // Tiempo entre disparo y disparo
+            this.CADENCIA_DISPARO = 200; // Tiempo entre disparo y disparo
             this.state.add("boot", MyGame.BootState);
             this.state.add("load", MyGame.LoadState);
             this.state.add("play", MyGame.PlayState);
             this.state.start("boot");
         }
-        return SimpleGame;
+        ;
+        return SpaceInvadersGame;
     }(Phaser.Game));
-    MyGame.SimpleGame = SimpleGame;
+    MyGame.SpaceInvadersGame = SpaceInvadersGame;
     ;
 })(MyGame || (MyGame = {}));
 ;
 window.onload = function () {
-    var game = new MyGame.SimpleGame();
+    var game = new MyGame.SpaceInvadersGame();
 };
 /**
  * Created by 46465442z on 18/04/16.
@@ -292,10 +288,6 @@ var MyGame;
             this.load.setPreloadSprite(progressBar);
             // Importamos las imagenes
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
-            this.load.image('proteccion1', 'assets/png/protection-1.png');
-            this.load.image('proteccion2', 'assets/png/protection-2.png');
-            this.load.image('proteccion3', 'assets/png/protection-3.png');
-            this.load.image('proteccion4', 'assets/png/protection-4.png');
             // Cargamos el audio
             this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
             this.load.audio('playerShootSound', 'sounds/playerShoot.wav');
@@ -361,7 +353,7 @@ var MyGame;
         PlayState.prototype.createJugador = function () {
             // Para el movimiento de la barra con las teclas
             this.game.cursor = this.input.keyboard.createCursorKeys();
-            var jugador = new MyGame.Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship', null);
+            var jugador = new MyGame.Player('J1', 5, this.game, this.world.centerX, this.world.centerY, 'sprites', 'spaceship');
             this.game.jugador = this.add.existing(jugador);
         };
         ;
@@ -509,6 +501,7 @@ var MyGame;
             this.game.score += 10;
             this.game.scoreText.setText("Score: " + this.game.score);
             if (this.game.marcianos1.countLiving() == 0) {
+                this.game.sonidoMovimeintoEnemigo.stop();
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!', { font: "50px Arial", fill: "#ffffff" });
             }
         };
@@ -588,7 +581,9 @@ var MyGame;
                     this.game.spriteMaricanos = true;
                 }
                 // Reproducimos el sonido del movimiento
-                this.game.sonidoMovimeintoEnemigo.play();
+                if (this.game.marcianos1.countLiving() > 1) {
+                    this.game.sonidoMovimeintoEnemigo.play();
+                }
                 // Comprobamos que no nos hayamos salido de la pantalla
                 if ((this.game.marcianos1.x < 0) || (this.game.marcianos1.x > this.game.world.width) || (this.game.marcianos1.x + this.game.marcianos1.width > this.game.world.width)) {
                     this.game.marcianos1.y += 50;
@@ -618,7 +613,7 @@ var MyGame;
     }(Phaser.State));
     MyGame.PlayState = PlayState;
     window.onload = function () {
-        new MyGame.SimpleGame();
+        new MyGame.SpaceInvadersGame();
     };
 })(MyGame || (MyGame = {}));
 //# sourceMappingURL=main.js.map

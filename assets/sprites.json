@@ -103,9 +103,9 @@
 	"app": "http://www.codeandweb.com/texturepacker",
 	"version": "1.0",
 	"image": "sprites.png",
-	"format": "RGB888",
+	"format": "RGBA8888",
 	"size": {"w":740,"h":102},
 	"scale": "1",
-	"smartupdate": "$TexturePacker:SmartUpdate:eb55c3d52fef3a55f533d0fe36b96895:53e3f4d16cab3e045bf2ee37fb8ca261:1eabdf11f75e3a4fe3147baf7b5be24b$"
+	"smartupdate": "$TexturePacker:SmartUpdate:55c694238cd1248adb1114491ff2d8df:53e3f4d16cab3e045bf2ee37fb8ca261:1eabdf11f75e3a4fe3147baf7b5be24b$"
 }
 }

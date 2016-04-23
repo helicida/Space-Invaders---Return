@@ -6,10 +6,10 @@ module MyGame {
     export class EnemigosFactory {
 
         // Instanciamos el juego
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         // Constructores
-        constructor(game:SimpleGame) {
+        constructor(game:SpaceInvadersGame) {
             this.game = game;
         }
 

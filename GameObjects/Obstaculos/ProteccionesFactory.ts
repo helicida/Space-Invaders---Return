@@ -6,7 +6,7 @@ module MyGame {
     export class ProteccionesFactory {
 
         // Instanciamos el juego
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         // Constructores
         constructor(game:SimpleGame) {

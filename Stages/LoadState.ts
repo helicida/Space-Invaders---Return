@@ -20,13 +20,7 @@ module MyGame {
 
             // Importamos las imagenes
             this.load.atlasJSONHash('sprites', 'assets/sprites.png', 'assets/sprites.json');
-            
-            this.load.image('proteccion1', 'assets/png/protection-1.png');
-            this.load.image('proteccion2', 'assets/png/protection-2.png');
-            this.load.image('proteccion3', 'assets/png/protection-3.png');
-            this.load.image('proteccion4', 'assets/png/protection-4.png');
-
-            
+                        
             // Cargamos el audio
             this.load.audio('killedEnemySound', 'sounds/killedEnemy.wav');
             this.load.audio('playerShootSound', 'sounds/playerShoot.wav');

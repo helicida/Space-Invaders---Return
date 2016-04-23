@@ -6,14 +6,14 @@ module MyGame {
     export class Marciano1 extends Enemigo {
 
         // Games
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         // Variables auxiliares
         nextFire = 0;
         CADENCIA_DISPARO = 1000;
 
         // Constructor de los enemigos
-        constructor(game:SimpleGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number) {
+        constructor(game:SpaceInvadersGame, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, x:number, y:number) {
             super(game, x, y, key, 0);
 
             // Ajustmaos el sprite

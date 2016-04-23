@@ -6,10 +6,10 @@ module MyGame {
     export abstract class Enemigo extends Phaser.Sprite {
 
         // Games
-        game:SimpleGame;
+        game:SpaceInvadersGame;
 
         // Constructor de los enemigos
-        constructor(game:SimpleGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
+        constructor(game:SpaceInvadersGame, x:number, y:number, key:string|Phaser.RenderTexture|Phaser.BitmapData|PIXI.Texture, frame:string|number) {
             super(game, x, y, key, frame);
 
             // Predeterminadas
