@@ -221,7 +221,7 @@ var MyGame;
             this.nextFire = 0;
             // Constantes
             this.ACELERACION = 700; // aceleración
-            this.CADENCIA_DISPARO = 200; // Tiempo entre disparo y disparo
+            this.CADENCIA_DISPARO = 500; // Tiempo entre disparo y disparo
             this.state.add("boot", MyGame.BootState);
             this.state.add("load", MyGame.LoadState);
             this.state.add("play", MyGame.PlayState);
@@ -503,6 +503,7 @@ var MyGame;
             if (this.game.marcianos1.countLiving() == 0) {
                 this.game.sonidoMovimeintoEnemigo.stop();
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!', { font: "50px Arial", fill: "#ffffff" });
+                this.input.onTap.addOnce(this.restartGame, this);
             }
         };
         ;
@@ -534,6 +535,7 @@ var MyGame;
             if (jugador.health == 0) {
                 jugador.kill();
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido', { font: "50px Arial", fill: "#ffffff" });
+                this.input.onTap.addOnce(this.restartGame, this);
             }
             this.explosion(jugador.body.x, jugador.body.y);
         };
@@ -546,6 +548,12 @@ var MyGame;
         };
         PlayState.prototype.destruirProteccion = function (enemigo, proteccion) {
             proteccion.kill();
+        };
+        PlayState.prototype.restartGame = function () {
+            this.game.score = 0;
+            this.game.sonidoPlatillo.stop();
+            this.game.sonidoMovimeintoEnemigo.stop();
+            this.game.state.restart();
         };
         PlayState.prototype.update = function () {
             _super.prototype.update.call(this);

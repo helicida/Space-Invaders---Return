@@ -9,7 +9,7 @@ module MyGame {
         game:SpaceInvadersGame;
 
         // Constructores
-        constructor(game:SimpleGame) {
+        constructor(game:SpaceInvadersGame) {
             this.game = game;
         }
 

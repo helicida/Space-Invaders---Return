@@ -265,6 +265,8 @@ module MyGame {
 
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, '¡Has ganado!',
                     {font: "50px Arial", fill: "#ffffff"});
+
+                this.input.onTap.addOnce(this.restartGame, this);
             }
         };
 
@@ -310,6 +312,8 @@ module MyGame {
 
                 this.game.endGameText = this.add.text(this.world.centerX - 90, this.world.centerY - 30, 'Has perdido',
                     {font: "50px Arial", fill: "#ffffff"});
+
+                this.input.onTap.addOnce(this.restartGame, this);
             }
 
             this.explosion(jugador.body.x, jugador.body.y);
@@ -328,6 +332,15 @@ module MyGame {
 
         destruirProteccion(enemigo:Enemigo, proteccion:Proteccion) {
             proteccion.kill();
+        }
+
+
+        private restartGame(){
+            this.game.score = 0;
+            this.game.sonidoPlatillo.stop();
+            this.game.sonidoMovimeintoEnemigo.stop();
+
+            this.game.state.restart();
         }
 
 

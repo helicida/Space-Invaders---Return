@@ -49,7 +49,7 @@ module MyGame {
 
         // Constantes
         ACELERACION = 700;       // aceleración
-        CADENCIA_DISPARO = 200;  // Tiempo entre disparo y disparo
+        CADENCIA_DISPARO = 500;  // Tiempo entre disparo y disparo
 
         constructor() {
             super(1366, 768, Phaser.CANVAS, 'gameDiv');
